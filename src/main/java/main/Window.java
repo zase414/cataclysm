@@ -1,33 +1,31 @@
-package engine;
+package main;
 
-import main.KeyListener;
-import main.MouseListener;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
-
-import java.nio.*;
+import util.Time;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
-
-
-import static org.lwjgl.glfw.GLFW.*;
 
 public class Window {
     int width, height;
+    private float r, g, b, a;
     private String title;
     private long glfwWindow;
+    private static Scene currentScene = null;
 
     private static Window window = null;
     private Window() {
         this.width = 1920;
         this.height = 1080;
-        this.title = "Cataclysm";
+        this.title = "cataclysm";
+        r = 1;
+        g = 0;
+        b = 0;
+        a = 1;
     }
 
     public static Window get() {
@@ -35,6 +33,23 @@ public class Window {
             Window.window = new Window();
         }
         return Window.window;
+    }
+
+    public static void changeScene(int newScene) {
+        switch (newScene) {
+            case 0:
+                currentScene = new MenuScene();
+                //currentScene.init();
+                break;
+            case 1:
+                currentScene = new LevelEditorScene();
+                break;
+            case 2:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Unknown scene '" + newScene + "'";
+        }
     }
 
     public void run() {
@@ -87,24 +102,39 @@ public class Window {
 
         // enable bindings
         GL.createCapabilities();
+
+        Window.changeScene(0);
     }
     public void loop() {
+        float beginTime = Time.getTime();
+        float endTime = Time.getTime();
+        float dt = -1.0f;
+
         while (!glfwWindowShouldClose(glfwWindow)) {
 
             // poll events
             glfwPollEvents();
 
             // background color
-            glClearColor(0.0f,0.0f,0.0f,1.0f);
+            glClearColor(r,g,b,a);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
-                System.out.println("spacebar is pressed");
+
+
+            if (dt >= 0) {
+                currentScene.update(dt);
             }
 
-            glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+
 
             glfwSwapBuffers(glfwWindow);
 
+            endTime = Time.getTime();
+            dt = endTime - beginTime;
+            beginTime = endTime;
         }
     }
 }
