@@ -12,7 +12,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
     int width, height;
-    private float r, g, b, a;
+    public float r, g, b, a;
     private String title;
     private long glfwWindow;
     private static Scene currentScene = null;
@@ -23,8 +23,8 @@ public class Window {
         this.height = 1080;
         this.title = "cataclysm";
         r = 1;
-        g = 0;
-        b = 0;
+        g = 1;
+        b = 1;
         a = 1;
     }
 
@@ -39,13 +39,15 @@ public class Window {
         switch (newScene) {
             case 0:
                 currentScene = new MenuScene();
-                //currentScene.init();
+                currentScene.init();
                 break;
             case 1:
                 currentScene = new LevelEditorScene();
+                currentScene.init();
                 break;
             case 2:
                 currentScene = new LevelScene();
+                currentScene.init();
                 break;
             default:
                 assert false : "Unknown scene '" + newScene + "'";
@@ -125,8 +127,15 @@ public class Window {
                 currentScene.update(dt);
             }
 
-
-
+            if (KeyListener.isKeyPressed(GLFW_KEY_F1)) {
+                changeScene(0);
+            }
+            if (KeyListener.isKeyPressed(GLFW_KEY_F2)) {
+                changeScene(1);
+            }
+            if (KeyListener.isKeyPressed(GLFW_KEY_F3)) {
+                changeScene(2);
+            }
 
 
 

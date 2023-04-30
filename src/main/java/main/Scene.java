@@ -1,7 +1,11 @@
 package main;
 
 public abstract class Scene {
-    public Scene () {
+    public Scene() {
+
+    }
+
+    public void init() {
 
     }
 
