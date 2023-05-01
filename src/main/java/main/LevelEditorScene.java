@@ -1,6 +1,7 @@
 package main;
 
 import org.lwjgl.BufferUtils;
+import render.Shader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -52,7 +53,7 @@ public class LevelEditorScene extends Scene{
     private int vaoID, vboID, eboID;
 
     public LevelEditorScene() {
-
+        Shader testShader = new Shader("assets/shaders/default.glsl");
     }
     @Override
     public void init() {

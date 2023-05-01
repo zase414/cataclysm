@@ -7,6 +7,6 @@ public class MenuScene extends Scene{
 
     @Override
     public void update(float dt) {
-        System.out.println(1.0f/dt+" FPS");
+        // System.out.println(1.0f/dt+" FPS");
     }
 }
