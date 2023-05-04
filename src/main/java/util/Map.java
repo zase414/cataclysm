@@ -1,5 +1,5 @@
-package main;
-import main.Line;
+package util;
+import util.Line;
 public class Map {
     Line wall;
 }

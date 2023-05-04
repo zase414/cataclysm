@@ -79,6 +79,8 @@ public class LevelEditorScene extends Scene{
     }
     @Override
     public void update(float dt) {
+        camera.position.x -= dt * 50.0f;
+        camera.position.y -= dt * 50.0f;
 
         defaultShader.use();
 
