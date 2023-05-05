@@ -4,23 +4,18 @@ public class Line {
     float x1, y1, x2, y2;
     float dx = x2 - x1;
     float dy = y2 - y1;
-    float tMin, tMax;
+    static float tMin = 0, tMax = 1;
 
     public void init() {
         this.dx = this.x2 - this.x1;
         this.dy = this.y2 - this.y1;
-        this.tMin = 0;
-        this.tMax = (this.x2 - this.x1) / this.dx;
     }
 
 
 
 
     public static float getIntersectionT(Line line1, Line line2) {
-
-        float intersectionT =     ((line2.dx * line1.y1) - (line2.dx * line2.y1) - (line2.dy * line1.x1) + (line2.dy * line2.x1)) /
-                                                  ((line2.dy * line1.dx) - (line2.dx * line1.dy));
-
+        float intersectionT = ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
         return intersectionT;
     }
 
@@ -36,12 +31,17 @@ public class Line {
 
     public static boolean areIntersecting(Line line1, Line line2) {
         float t = getIntersectionT(line1, line2);
+        float t2 = getIntersectionT(line2, line1);
 
-        // the vectors don't have the same root
-        if ((!(
-            line1.dx / line1.dy == line2.dx / line2.dy)) &&
-            t >= line1.tMin &&
-            t <= line1.tMax) {
+        System.out.println("t, t2: "+t+", "+t2);
+        System.out.println("vectors have the same root: " + (line1.dx / line1.dy == line2.dx / line2.dy));
+        System.out.println("t is bigger or equal to tMin: " + (t >= tMin) + ", tMax = " + tMax);
+        System.out.println("t is lower or equal to tMax: " + (t <= tMax) + ", tMin = " + tMin);
+        System.out.println("t2 is bigger or equal to tMin: " + (t2 >= tMin) + ", tMax = " + tMax);
+        System.out.println("t2 is lower or equal to tMax: " + (t2 <= tMax) + ", tMin = " + tMin);
+
+        // the vectors don't have the same root and intersection is on both lines
+        if (t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax) {
             return true;
         } else return false;
     }
