@@ -1,9 +1,9 @@
 package util;
 
 public class Line {
-    float x1, y1, x2, y2;
-    float dx = x2 - x1;
-    float dy = y2 - y1;
+    public float x1, y1, x2, y2;
+    public float dx = x2 - x1;
+    public float dy = y2 - y1;
     static float tMin = 0, tMax = 1;
 
     public void init() {
@@ -11,12 +11,8 @@ public class Line {
         this.dy = this.y2 - this.y1;
     }
 
-
-
-
     public static float getIntersectionT(Line line1, Line line2) {
-        float intersectionT = ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
-        return intersectionT;
+        return ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
     }
 
     public static float[] getIntersection(Line line1, Line line2) {
@@ -41,9 +37,7 @@ public class Line {
         System.out.println("t2 is lower or equal to tMax: " + (t2 <= tMax) + ", tMin = " + tMin);
 
         // the vectors don't have the same root and intersection is on both lines
-        if (t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax) {
-            return true;
-        } else return false;
+        return t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax;
     }
 
 

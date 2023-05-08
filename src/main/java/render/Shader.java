@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
 
 public class Shader {
 
