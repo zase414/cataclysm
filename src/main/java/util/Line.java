@@ -29,12 +29,12 @@ public class Line {
         float t = getIntersectionT(line1, line2);
         float t2 = getIntersectionT(line2, line1);
 
-        System.out.println("t, t2: "+t+", "+t2);
+        /*System.out.println("t, t2: "+t+", "+t2);
         System.out.println("vectors have the same root: " + (line1.dx / line1.dy == line2.dx / line2.dy));
         System.out.println("t is bigger or equal to tMin: " + (t >= tMin) + ", tMax = " + tMax);
         System.out.println("t is lower or equal to tMax: " + (t <= tMax) + ", tMin = " + tMin);
         System.out.println("t2 is bigger or equal to tMin: " + (t2 >= tMin) + ", tMax = " + tMax);
-        System.out.println("t2 is lower or equal to tMax: " + (t2 <= tMax) + ", tMin = " + tMin);
+        System.out.println("t2 is lower or equal to tMax: " + (t2 <= tMax) + ", tMin = " + tMin);*/
 
         // the vectors don't have the same root and intersection is on both lines
         return t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax;

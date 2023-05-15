@@ -2,7 +2,7 @@ package main;
 
 public class MenuScene extends Scene{
     public MenuScene() {
-        System.out.println("in the menu");
+        System.out.println("Scene 1 'MenuScene'");
     }
 
     @Override

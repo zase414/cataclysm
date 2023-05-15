@@ -11,11 +11,11 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
-    int width, height;
+    public int width, height;
     public float r, g, b, a;
     private String title;
     private long glfwWindow;
-    private static Scene currentScene = null;
+    public static Scene currentScene = null;
 
     private static Window window = null;
     private Window() {
@@ -108,6 +108,7 @@ public class Window {
         Window.changeScene(0);
     }
     public void loop() {
+
         float beginTime = Time.getTime();
         float endTime = Time.getTime();
         float dt = -1.0f;
@@ -120,8 +121,6 @@ public class Window {
             // background color
             glClearColor(r,g,b,a);
             glClear(GL_COLOR_BUFFER_BIT);
-
-
 
             if (dt >= 0) {
                 currentScene.update(dt);
