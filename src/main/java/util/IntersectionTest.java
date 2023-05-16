@@ -25,7 +25,7 @@ public class IntersectionTest {
 
 
             System.out.println(Line.areIntersecting(line1,line2));
-            System.out.println(Line.getIntersection(line1,line2)[0] + " // " + Line.getIntersection(line1, line2)[1]);
+            System.out.println(Line.getIntersection(line1,line2).x + " // " + Line.getIntersection(line1, line2).y);
 
 
     }
