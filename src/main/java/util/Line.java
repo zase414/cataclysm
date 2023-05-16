@@ -1,5 +1,7 @@
 package util;
 
+import org.joml.Vector2f;
+
 public class Line {
     public float x1, y1, x2, y2;
     public float dx = x2 - x1;
@@ -15,12 +17,12 @@ public class Line {
         return ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
     }
 
-    public static float[] getIntersection(Line line1, Line line2) {
-        float[] intersection = new float[2];
+    public static Vector2f getIntersection(Line line1, Line line2) {
+        Vector2f intersection = new Vector2f();
         float t = getIntersectionT(line1, line2);
 
-        intersection[0] = line1.x1 + (line1.dx * t);
-        intersection[1] = line1.y1 + (line1.dy * t);
+        intersection.x = line1.x1 + (line1.dx * t);
+        intersection.y = line1.y1 + (line1.dy * t);
 
         return intersection;
     }
