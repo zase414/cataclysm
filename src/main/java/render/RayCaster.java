@@ -1,23 +1,28 @@
 package render;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import main.Map;
 import main.Player;
-import main.Window;
+import org.joml.Vector2f;
 import util.*;
 
 public class RayCaster {
-    static float renderDistance = 100;
-    static float fov = 120;
-    static int rayCount = 100;
-    static List<Line> rays;
-    static float offset = (float) (1/Math.tan(Math.toRadians(fov/2)));
-    public static void createRays(double viewAngle) {
+    float renderDistance = 100;
+    float fov = 90;
+    int rayCount = 100;
+    List<Line> rays;
+    float offset;
+
+    public RayCaster() {
+        this.offset = (float) (1/Math.tan(Math.toRadians(fov/2)));
+    }
+    public void update(double viewAngle) {
+
         float posX = Player.posX;
         float posY = Player.posY;
-        float offset = RayCaster.offset;
 
         List<Line> rays = new ArrayList<>();
         // degrees -> radians
@@ -25,7 +30,7 @@ public class RayCaster {
         // calculate vector to the center
         /*
 
-            0  edge1
+            O  edge1
                 *
                     *
                         *1
@@ -36,7 +41,7 @@ public class RayCaster {
              offset *           |        *
                 *               |          1*
             *                  centerDY        *
-        O player                |                 0  edge2
+        O player                |                 O  edge2
         */
 
         float centerDX = offset * (float) Math.sin(rad);
@@ -56,6 +61,7 @@ public class RayCaster {
         float dXStep = (edge2X - edge1X) / (rayCount - 1);
         float dYStep = (edge2Y - edge1Y) / (rayCount - 1);
 
+        System.out.println("RAYS: -------------------");
         for (int i = 0; i < rayCount; i++) {
 
             Line ray = new Line();
@@ -67,36 +73,88 @@ public class RayCaster {
 
             ray.init();
 
-            System.out.println("(" + ray.x1 + ", " + ray.y1 + ") (" + ray.x2 + ", " + ray.y2 + ")");
+            // ==== debug tool to check the rays ====
+            //System.out.println("(" + ray.x1 + ", " + ray.y1 + ") (" + ray.x2 + ", " + ray.y2 + ")");
+
             rays.add(ray);
         }
-        RayCaster.rays = rays;
-    }
+        this.rays = rays;
 
-    public static void uploadVertexes() {
-        //TODO
+        List<Vector2f> intersections;
     }
+    public List<Vector2f>[] intersections() {
 
-    public static void uploadElements() {
-        //TODO
+        // array[i] corresponds to i-th ray
+        // array[i] stores all the intersections of that ray with the walls as a vector
+        List<Vector2f>[] intersections = new ArrayList[rayCount];
+
+        int index = 0;
+        for (Line ray:this.rays) {
+            for (Line wall: Map.get().walls) {
+
+                if (Line.areIntersecting(ray,wall)) {
+                    // create intersection point and add it to the array
+                    Vector2f in = Line.getIntersection(ray,wall);
+                    if (intersections[index] == null) {
+                        intersections[index] = new ArrayList<>();
+                    }
+                    intersections[index].add(in);
+
+                }
+
+            }
+            // ==== debug tool to check the sorting ====
+            /*
+            for (Vector2f intersection:intersections[index]) {
+                float dx = Player.posX - intersection.x;
+                float dy = Player.posY - intersection.y;
+                double dist = Math.sqrt((dx * dx) + (dy * dy));
+                System.out.println("intersection  '"+ index + "' " +intersection.x + " " + intersection.y  + "      distance: " + dist);
+            }
+            */
+
+            // sort the lists by distance from the player >> useful for rendering
+            intersections[index].sort(Comparator.comparingDouble(intersection -> {
+                float dx = Player.posX - intersection.x;
+                float dy = Player.posY - intersection.y;
+                return -Math.sqrt((dx * dx) + (dy * dy));
+            }));
+
+
+            // ==== debug tool to check the sorting ====
+            /*
+            for (Vector2f intersection:intersections[index]) {
+                float dx = Player.posX - intersection.x;
+                float dy = Player.posY - intersection.y;
+                double dist = Math.sqrt((dx * dx) + (dy * dy));
+                System.out.println("sorted        '"+ index + "' " +intersection.x + " " + intersection.y + "      distance: " + dist);
+            }
+            */
+
+            index++;
+        }
+
+
+        return intersections;
     }
 
     public static void main(String[] args) {
 
+
         // TEST
-        createRays(0);
-        int index = 0;
-        for (Line ray:RayCaster.rays) {
-            for (Line wall: Map.get().walls) {
-                if (Line.areIntersecting(ray,wall)) {
-                    float dx = Player.posX - Line.getIntersection(ray,wall)[0];
-                    float dy = Player.posY - Line.getIntersection(ray,wall)[1];
-                    System.out.println(Line.getIntersection(ray,wall)[0] + " " + Line.getIntersection(ray,wall)[1]);
-                    float distance = (float) Math.sqrt((dx*dx)+(dy*dy));
-                }
+
+        RayCaster rayCaster = new RayCaster();
+        rayCaster.update(0);
+        List<Vector2f>[] listArray = rayCaster.intersections();
+        for (int i = 0; i < listArray.length; i++) {
+            for (Vector2f intersection:listArray[i]) {
+                //System.out.println("sorted        '"+ i + "' " +intersection.x + " " + intersection.y);
             }
-            index++;
         }
+
+
     }
+
+
 
 }
