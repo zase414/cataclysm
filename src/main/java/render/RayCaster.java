@@ -14,6 +14,10 @@ public class RayCaster {
     static int rayCount = 100;
     static List<Line> rays;
     static float offset = (float) (1/Math.tan(Math.toRadians(fov/2)));
+
+    static float[] vertexArray;
+    static int[] elementArray;
+
     public static void createRays(double viewAngle) {
         float posX = Player.posX;
         float posY = Player.posY;
@@ -73,14 +77,6 @@ public class RayCaster {
         RayCaster.rays = rays;
     }
 
-    public static void uploadVertexes() {
-        //TODO
-    }
-
-    public static void uploadElements() {
-        //TODO
-    }
-
     public static void main(String[] args) {
 
         // TEST
@@ -98,5 +94,4 @@ public class RayCaster {
             index++;
         }
     }
-
 }
