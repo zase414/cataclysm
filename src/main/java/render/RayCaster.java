@@ -82,23 +82,29 @@ public class RayCaster {
 
         List<Vector2f> intersections;
     }
-    public List<Vector2f>[] intersections() {
+    public float[] getDistanceList() {
 
         // array[i] corresponds to i-th ray
         // array[i] stores all the intersections of that ray with the walls as a vector
+
         List<Vector2f>[] intersections = new ArrayList[rayCount];
+
+        float[] distances = new float[rayCount];
 
         int index = 0;
         for (Line ray:this.rays) {
+
+            float distance = -1;
+
             for (Line wall: Map.get().walls) {
 
                 if (Line.areIntersecting(ray,wall)) {
-                    // create intersection point and add it to the array
-                    Vector2f in = Line.getIntersection(ray,wall);
+                    // create intersection point and add it to the list
+                    Vector2f intersection = Line.getIntersection(ray,wall);
                     if (intersections[index] == null) {
                         intersections[index] = new ArrayList<>();
                     }
-                    intersections[index].add(in);
+                    intersections[index].add(intersection);
 
                 }
 
@@ -113,13 +119,18 @@ public class RayCaster {
             }
             */
 
-            // sort the lists by distance from the player >> useful for rendering
+            // sort the lists by distance from the player
             intersections[index].sort(Comparator.comparingDouble(intersection -> {
                 float dx = Player.posX - intersection.x;
                 float dy = Player.posY - intersection.y;
                 return -Math.sqrt((dx * dx) + (dy * dy));
             }));
 
+            float dx = Player.posX - intersections[index].get(0).x;
+            float dy = Player.posY - intersections[index].get(0).y;
+            distance = (float) Math.sqrt((dx * dx) + (dy * dy));
+
+            distances[index] = distance;
 
             // ==== debug tool to check the sorting ====
             /*
@@ -135,21 +146,18 @@ public class RayCaster {
         }
 
 
-        return intersections;
+        return distances;
     }
 
     public static void main(String[] args) {
-
 
         // TEST
 
         RayCaster rayCaster = new RayCaster();
         rayCaster.update(0);
-        List<Vector2f>[] listArray = rayCaster.intersections();
-        for (int i = 0; i < listArray.length; i++) {
-            for (Vector2f intersection:listArray[i]) {
-                //System.out.println("sorted        '"+ i + "' " +intersection.x + " " + intersection.y);
-            }
+        float[] distArray = rayCaster.getDistanceList();
+        for (int i = 0; i < distArray.length; i++) {
+            System.out.println("distance '"+ i +"': " + distArray[i]);
         }
 
 
