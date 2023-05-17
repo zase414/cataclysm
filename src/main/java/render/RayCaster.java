@@ -84,64 +84,28 @@ public class RayCaster {
     }
     public float[] getDistanceList() {
 
-        // array[i] corresponds to i-th ray
-        // array[i] stores all the intersections of that ray with the walls as a vector
-
-        List<Vector2f>[] intersections = new ArrayList[rayCount];
-
-        float[] distances = new float[rayCount];
+        List<Float>[] distances = new ArrayList[];
 
         int index = 0;
         for (Line ray:this.rays) {
 
-            float distance = -1;
+            if (distances[index] == null) {
+                distances[index] = new ArrayList<>();
+            }
 
             for (Line wall: Map.get().walls) {
 
                 if (Line.areIntersecting(ray,wall)) {
                     // create intersection point and add it to the list
                     Vector2f intersection = Line.getIntersection(ray,wall);
-                    if (intersections[index] == null) {
-                        intersections[index] = new ArrayList<>();
-                    }
-                    intersections[index].add(intersection);
+                    
+                    float dx = Player.posX - intersection.x;
+                    float dy = Player.posY - intersection.y;
 
+                    distances[index].add((float) Math.sqrt((dx * dx) + (dy * dy)));
                 }
-
             }
-            // ==== debug tool to check the sorting ====
-            /*
-            for (Vector2f intersection:intersections[index]) {
-                float dx = Player.posX - intersection.x;
-                float dy = Player.posY - intersection.y;
-                double dist = Math.sqrt((dx * dx) + (dy * dy));
-                System.out.println("intersection  '"+ index + "' " +intersection.x + " " + intersection.y  + "      distance: " + dist);
-            }
-            */
-
-            // sort the lists by distance from the player
-            intersections[index].sort(Comparator.comparingDouble(intersection -> {
-                float dx = Player.posX - intersection.x;
-                float dy = Player.posY - intersection.y;
-                return -Math.sqrt((dx * dx) + (dy * dy));
-            }));
-
-            float dx = Player.posX - intersections[index].get(0).x;
-            float dy = Player.posY - intersections[index].get(0).y;
-            distance = (float) Math.sqrt((dx * dx) + (dy * dy));
-
-            distances[index] = distance;
-
-            // ==== debug tool to check the sorting ====
-            /*
-            for (Vector2f intersection:intersections[index]) {
-                float dx = Player.posX - intersection.x;
-                float dy = Player.posY - intersection.y;
-                double dist = Math.sqrt((dx * dx) + (dy * dy));
-                System.out.println("sorted        '"+ index + "' " +intersection.x + " " + intersection.y + "      distance: " + dist);
-            }
-            */
-
+        
             index++;
         }
 
