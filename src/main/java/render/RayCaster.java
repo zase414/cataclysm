@@ -1,7 +1,6 @@
 package render;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import main.Map;
@@ -10,81 +9,48 @@ import org.joml.Vector2f;
 import util.*;
 
 public class RayCaster {
-    float renderDistance = 100;
-    float fov = 90;
-    int rayCount = 100;
+    float renderDistance;
+    float fov;
+    public int rayCount;
     List<Line> rays;
-    float offset;
 
-    public RayCaster() {
-        this.offset = (float) (1/Math.tan(Math.toRadians(fov/2)));
+
+    public RayCaster(float fov, float renderDistance, int rayCount) {
+        this.renderDistance = renderDistance;
+        this.rayCount = rayCount;
+        this.fov = fov;
     }
-    public void update(double viewAngle) {
-
-        float posX = Player.posX;
-        float posY = Player.posY;
+    public void update(Player player) {
 
         List<Line> rays = new ArrayList<>();
-        // degrees -> radians
-        double rad = Math.toRadians(viewAngle);
-        // calculate vector to the center
-        /*
 
-            O  edge1
-                *
-                    *
-                        *1
-            centerDX        *
-       -------------------------*centerPoint
-                            *   |  *
-                        *       |     *
-             offset *           |        *
-                *               |          1*
-            *                  centerDY        *
-        O player                |                 O  edge2
-        */
-
-        float centerDX = offset * (float) Math.sin(rad);
-        float centerDY = offset * (float) Math.cos(rad);
-        // the normal vectors we use to find the edges
-        float nCenterDX = -(float) Math.cos(rad);
-        float nCenterDY = (float) Math.sin(rad);
-        // absolute center point coordinates
-        float centerPointX = posX + centerDX;
-        float centerPointY = posY + centerDY;
-        // absolute edge point coordinates
-        float edge1X = (centerPointX + nCenterDX);
-        float edge1Y = (centerPointY + nCenterDY);
-        float edge2X = (centerPointX - nCenterDX);
-        float edge2Y = (centerPointY - nCenterDY);
-        // X and Y steps between points used to cast rays
-        float dXStep = (edge2X - edge1X) / (rayCount - 1);
-        float dYStep = (edge2Y - edge1Y) / (rayCount - 1);
-
-        System.out.println("RAYS: -------------------");
+        float dAngle = fov / (rayCount - 1);
+        System.out.println("angle step = " + dAngle);
+        float startAngle = player.viewAngle - fov / 2;
+        System.out.println("start angle = " + startAngle);
         for (int i = 0; i < rayCount; i++) {
-
+            double angle = Math.toRadians(startAngle + i * dAngle);
             Line ray = new Line();
-            ray.x1 = posX;
-            ray.y1 = posY;
-
-            ray.x2 = renderDistance * ((posX + edge1X + dXStep * i) - ray.x1);
-            ray.y2 = renderDistance * ((posY + edge1Y + dYStep * i) - ray.y1);
+            ray.x1 = player.posX;
+            ray.y1 = player.posY;
+            float rayDX = renderDistance * (float) (Math.sin(angle));
+            float rayDY = renderDistance * (float) (Math.cos(angle));
+            ray.x2 = rayDX + ray.x1;
+            ray.y2 = rayDY + ray.y1;
 
             ray.init();
-
-            // ==== debug tool to check the rays ====
-            //System.out.println("(" + ray.x1 + ", " + ray.y1 + ") (" + ray.x2 + ", " + ray.y2 + ")");
-
             rays.add(ray);
         }
+
+        for (Line ray:rays
+             ) {
+            System.out.println(ray.x1 + " " +  ray.y1 + " " +  ray.x2 + " " + ray.y2);
+        }
         this.rays = rays;
-
-        List<Vector2f> intersections;
     }
-    public float[] getDistanceList() {
+    public List<Float>[] getDistanceListArray(Map map, Player player) {
 
-        List<Float>[] distances = new ArrayList[];
+        List<Float>[] distances = new ArrayList[rayCount];
 
         int index = 0;
         for (Line ray:this.rays) {
@@ -93,22 +59,22 @@ public class RayCaster {
                 distances[index] = new ArrayList<>();
             }
 
-            for (Line wall: Map.get().walls) {
-
+            for (Line wall: map.walls) {
                 if (Line.areIntersecting(ray,wall)) {
-                    // create intersection point and add it to the list
+                    // calculate the distance of the intersection to the player
                     Vector2f intersection = Line.getIntersection(ray,wall);
-                    
-                    float dx = Player.posX - intersection.x;
-                    float dy = Player.posY - intersection.y;
 
-                    distances[index].add((float) Math.sqrt((dx * dx) + (dy * dy)));
+                    float dx = player.posX - intersection.x;
+                    float dy = player.posY - intersection.y;
+                    float distance = (float) Math.sqrt((dx * dx) + (dy * dy));
+
+                    // ==== debug ====
+                    System.out.println("intersection: " + intersection.x + " ; " + intersection.y);
+                    distances[index].add(distance);
                 }
             }
-        
             index++;
         }
-
 
         return distances;
     }
@@ -116,17 +82,21 @@ public class RayCaster {
     public static void main(String[] args) {
 
         // TEST
+        Map map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
+        map.compile();
+        Player player = new Player(map);
+        System.out.println("x: " + player.posX + ", y: " + player.posY + ", angle: " + player.viewAngle);
 
-        RayCaster rayCaster = new RayCaster();
-        rayCaster.update(0);
-        float[] distArray = rayCaster.getDistanceList();
+        RayCaster rayCaster = new RayCaster(90, 1000, 100);
+        rayCaster.update(player);
+        System.out.println("renderDistance: " + rayCaster.renderDistance + ", fov: " + rayCaster.fov + ", rayCount: " + rayCaster.rayCount);
+
+        List<Float>[] distArray = rayCaster.getDistanceListArray(map, player);
+
         for (int i = 0; i < distArray.length; i++) {
-            System.out.println("distance '"+ i +"': " + distArray[i]);
+            for (int j = 0; j < distArray[i].size(); j++) {
+                System.out.println("distance '"+ i +"': " + distArray[i].get(j));
+            }
         }
-
-
     }
-
-
-
 }
