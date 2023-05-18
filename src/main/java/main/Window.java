@@ -16,7 +16,6 @@ public class Window {
     private String title;
     private long glfwWindow;
     public static Scene currentScene = null;
-
     private static Window window = null;
     private Window() {
         this.width = 1920;
@@ -38,14 +37,17 @@ public class Window {
     public static void changeScene(int newScene) {
         switch (newScene) {
             case 0:
+                System.out.println("Scene -> Menu");
                 currentScene = new MenuScene();
                 currentScene.init();
                 break;
             case 1:
-                currentScene = new LevelEditorScene();
+                System.out.println("Scene -> FPV");
+                currentScene = new FirstPersonScene();
                 currentScene.init();
                 break;
             case 2:
+                System.out.println("Scene -> Map");
                 currentScene = new LevelScene();
                 currentScene.init();
                 break;
