@@ -1,49 +1,93 @@
 package main;
 
+import com.google.gson.JsonElement;
+import org.joml.Vector2f;
+import util.Color;
 import util.Line;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashSet;
 
 public class Map {
-    private static Map instance;
-    public static String filepath = "C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.ccmap";
+    public String filepath;
     public HashSet<Line> walls = new HashSet<>();
+    public Vector2f spawnPoint = new Vector2f();
+    public float spawnViewAngle;
+    public Color skyColor = new Color();
+    public Color groundColor = new Color();
+
+    public Map (String filepath) {
+        this.filepath = filepath;
+    }
+
     public void compile() {
-
-        String filepath = Map.filepath;
-
         try {
-            String source = new String(Files.readAllBytes(Paths.get(filepath)));
-            String[] splitLines = source.split("(/)");
+            // read the JSON file
+            FileReader fileReader = new FileReader(filepath);
+            JsonParser jsonParser = new JsonParser();
+            JsonObject jsonObject = jsonParser.parse(fileReader).getAsJsonObject();
 
-            for (int i = 1; i < splitLines.length; i++) {
+            // extract spawnpoint coordinates
+            JsonObject spawnpointObj = jsonObject.getAsJsonObject("spawnpoint");
+            this.spawnPoint.x = spawnpointObj.get("x").getAsFloat();
+            this.spawnPoint.y = spawnpointObj.get("y").getAsFloat();
 
-                String[] splitCoordinates = splitLines[i].split("; +");
+            // extract the background colors
+            JsonObject skyColorObj = jsonObject.getAsJsonObject("sky_color");
+            this.skyColor.r = skyColorObj.get("r").getAsFloat();
+            this.skyColor.g = skyColorObj.get("g").getAsFloat();
+            this.skyColor.b = skyColorObj.get("b").getAsFloat();
+            this.skyColor.a = skyColorObj.get("a").getAsFloat();
+            JsonObject groundColorObj = jsonObject.getAsJsonObject("ground_color");
+            this.groundColor.r = groundColorObj.get("r").getAsFloat();
+            this.groundColor.g = groundColorObj.get("g").getAsFloat();
+            this.groundColor.b = groundColorObj.get("b").getAsFloat();
+            this.groundColor.a = groundColorObj.get("a").getAsFloat();
 
-                Line line = new Line();
-                line.x1 = Float.parseFloat(splitCoordinates[0]);
-                line.y1 = Float.parseFloat(splitCoordinates[1]);
-                line.x2 = Float.parseFloat(splitCoordinates[2]);
-                line.y2 = Float.parseFloat(splitCoordinates[3]);
-                line.init();
-                walls.add(line);
+
+            // print the spawn coordinates
+            System.out.println("Spawn coords: " + spawnPoint.x + "; " + spawnPoint.y);
+
+            // extract spawn view angle
+            this.spawnViewAngle = jsonObject.get("spawn_view_angle").getAsFloat();
+
+            // print the spawn_view_angle
+            System.out.println("Spawn View Angle: " + spawnViewAngle);
+
+            // extract walls coordinates
+            JsonArray wallsArray = jsonObject.getAsJsonArray("walls");
+            for (int i = 0; i < wallsArray.size(); i++) {
+                JsonObject wallObj = wallsArray.get(i).getAsJsonObject();
+
+                Line wall = new Line();
+
+                wall.x1 = wallObj.get("x1").getAsFloat();
+                wall.y1 = wallObj.get("y1").getAsFloat();
+                wall.x2 = wallObj.get("x2").getAsFloat();
+                wall.y2 = wallObj.get("y2").getAsFloat();
+                wall.r = wallObj.get("r").getAsFloat();
+                wall.g = wallObj.get("g").getAsFloat();
+                wall.b = wallObj.get("b").getAsFloat();
+                wall.a = wallObj.get("a").getAsFloat();
+
+                System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
+
+                wall.init();
+
+                walls.add(wall);
             }
         } catch (IOException e) {
             e.printStackTrace();
             assert false : "Error: could not open file for map: '" + filepath + "'";
         }
     }
-    public static Map get() {
-        if (Map.instance == null) {
-            Map.instance = new Map();
-            instance.compile();
-        }
-        return Map.instance;
-    }
-    public static void clear() {
-        Map.instance = null;
+
+    public static void main(String[] args) {
+        Map map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
+        map.compile();
     }
 }
