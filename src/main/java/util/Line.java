@@ -3,7 +3,7 @@ package util;
 import org.joml.Vector2f;
 
 public class Line {
-    public float x1, y1, x2, y2;
+    public float x1, y1, x2, y2, r, g, b, a; // TODO make these colors work, make them fade when the walls are far away
     public float dx = x2 - x1;
     public float dy = y2 - y1;
     static float tMin = 0, tMax = 1;
