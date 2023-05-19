@@ -293,8 +293,6 @@ public class FirstPersonScene extends Scene{
         List<Integer> elementList = new ArrayList<>();
 
         for (int i = 0; i < (wallVertexListLength / 28); i++) {
-            // pointer
-            int p = 6 * i;
             // element number shift
             int v = 4 * i;
             elementList.add(highestPreviousElement + 0 + v);
