@@ -9,18 +9,20 @@ import org.joml.Vector2f;
 import util.*;
 
 public class RayCaster {
-    float renderDistance;
-    float fov;
+    public float renderDistance;
+    public float fadeOutDistance;
+    public float fov;
     public int rayCount;
-    List<Line> rays;
+    public List<Line> rays;
 
 
-    public RayCaster(float fov, float renderDistance, int rayCount) {
+    public RayCaster(float fov, float renderDistance, int rayCount, float fadeOutDistance) {
+        this.fadeOutDistance = fadeOutDistance;
         this.renderDistance = renderDistance;
         this.rayCount = rayCount;
         this.fov = fov;
     }
-    public void update(Player player) {
+    public void cast(Player player, Map map) {
 
         List<Line> rays = new ArrayList<>();
 
@@ -29,56 +31,50 @@ public class RayCaster {
         float startAngle = player.viewAngle - fov / 2;
         System.out.println("start angle = " + startAngle);
         for (int i = 0; i < rayCount; i++) {
-            double angle = Math.toRadians(startAngle + i * dAngle);
-            Line ray = new Line();
-            ray.x1 = player.posX;
-            ray.y1 = player.posY;
-            float rayDX = renderDistance * (float) (Math.sin(angle));
-            float rayDY = renderDistance * (float) (Math.cos(angle));
-            ray.x2 = rayDX + ray.x1;
-            ray.y2 = rayDY + ray.y1;
+            double rayAngle = Math.toRadians(startAngle + i * dAngle);
 
-            ray.init();
+            float x1 = player.posX;
+            float y1 = player.posY;
+            float dx = renderDistance * (float) (Math.sin(rayAngle));
+            float dy = renderDistance * (float) (Math.cos(rayAngle));
+            float x2 = dx + x1;
+            float y2 = dy + y1;
+
+            Line ray = new Line(x1, y1, x2, y2);
+
             rays.add(ray);
         }
-
-        for (Line ray:rays
-             ) {
-            System.out.println(ray.x1 + " " +  ray.y1 + " " +  ray.x2 + " " + ray.y2);
-        }
-        this.rays = rays;
-    }
-    public List<Float>[] getDistanceListArray(Map map, Player player) {
-
-        List<Float>[] distances = new ArrayList[rayCount];
-
-        int index = 0;
-        for (Line ray:this.rays) {
-
-            if (distances[index] == null) {
-                distances[index] = new ArrayList<>();
-            }
-
+        for (Line ray:rays) {
+            float  minDistance = renderDistance + 1;
             for (Line wall: map.walls) {
+
                 if (Line.areIntersecting(ray,wall)) {
                     // calculate the distance of the intersection to the player
                     Vector2f intersection = Line.getIntersection(ray,wall);
 
-                    float dx = player.posX - intersection.x;
-                    float dy = player.posY - intersection.y;
-                    float distance = (float) Math.sqrt((dx * dx) + (dy * dy));
+                    double dx = player.posX - intersection.x;
+                    double dy = player.posY - intersection.y;
+
+                    double wallDistance = Math.sqrt((dx * dx) + (dy * dy));
+                    if (wallDistance < minDistance) {
+                        minDistance = (float) wallDistance;
+                        ray.r = Math.max(Math.min(wall.r - wall.r * (minDistance / fadeOutDistance), wall.r), wall.r / 100.0f);
+                        ray.g = Math.max(Math.min(wall.g - wall.g * (minDistance / fadeOutDistance), wall.g), wall.g / 100.0f);
+                        ray.b = Math.max(Math.min(wall.b - wall.b * (minDistance / fadeOutDistance), wall.b), wall.b / 100.0f);
+                        ray.a = wall.a;
+                    };
 
                     // ==== debug ====
                     System.out.println("intersection: " + intersection.x + " ; " + intersection.y);
-                    distances[index].add(distance);
                 }
             }
-            index++;
+            if (minDistance != 0.0 && minDistance < renderDistance + 1) {
+                ray.distanceToWall = minDistance;
+            }
+            System.out.println(ray.distanceToWall);
         }
-
-        return distances;
+        this.rays = rays;
     }
-
     public static void main(String[] args) {
 
         // TEST
@@ -87,16 +83,9 @@ public class RayCaster {
         Player player = new Player(map);
         System.out.println("x: " + player.posX + ", y: " + player.posY + ", angle: " + player.viewAngle);
 
-        RayCaster rayCaster = new RayCaster(90, 1000, 100);
-        rayCaster.update(player);
+        RayCaster rayCaster = new RayCaster(100, 1000, 100, 300);
+        rayCaster.cast(player, map);
         System.out.println("renderDistance: " + rayCaster.renderDistance + ", fov: " + rayCaster.fov + ", rayCount: " + rayCaster.rayCount);
 
-        List<Float>[] distArray = rayCaster.getDistanceListArray(map, player);
-
-        for (int i = 0; i < distArray.length; i++) {
-            for (int j = 0; j < distArray[i].size(); j++) {
-                System.out.println("distance '"+ i +"': " + distArray[i].get(j));
-            }
-        }
     }
 }
