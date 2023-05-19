@@ -4,12 +4,12 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import util.Line;
 import util.Time;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,15 +30,12 @@ public class FirstPersonScene extends Scene{
     int positionsSize = 3;
     int colorSize = 4;
     int floatSizeBytes = 4;
-    float wallR = 1.0f;
-    float wallG = 0.0f;
-    float wallB = 0.0f;
 
     @Override
     public void init() {
 
         // initialize the rayCaster
-        rayCaster = new RayCaster(70,1000,400);
+        rayCaster = new RayCaster(70,1000,400, 150);
 
         // initialize the map
         map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
@@ -116,11 +113,8 @@ public class FirstPersonScene extends Scene{
         } // keybinds
 
         {
-        // update the rayCaster
-        rayCaster.update(player);
-
-        // get the distance array
-        List<Float>[] distances = rayCaster.getDistanceListArray(map, player);
+        // update the rayCaster == update distances to walls
+        rayCaster.cast(player, map);
 
         // update the vertexArray and elementArray using the rayCaster
         List<Float> vertexList = new ArrayList<>();
@@ -139,7 +133,7 @@ public class FirstPersonScene extends Scene{
         skyElementList = skyElementList(0);
         groundElementList = groundElementList(Collections.max(skyElementList) + 1);
 
-        List<Float> wallVertexList = wallVertexList(distances);
+        List<Float> wallVertexList = wallVertexList(rayCaster);
         List<Integer> wallElementList = wallElementList(wallVertexList.size(), Collections.max(groundElementList) + 1);
 
         vertexList.addAll(skyVertexList);
@@ -214,10 +208,13 @@ public class FirstPersonScene extends Scene{
         glBindVertexArray(0);
         defaultShader.detach();
 
+        glDeleteBuffers(vaoID);
+        glDeleteBuffers(vboID);
+        glDeleteBuffers(eboID);
         MouseListener.endFrame();
     }
 
-    public List<Float> wallVertexList(List<Float>[] distanceList) {
+    public List<Float> wallVertexList(RayCaster rayCaster) {
 
         List<Float> vertexList = new ArrayList<>();
 
@@ -227,28 +224,18 @@ public class FirstPersonScene extends Scene{
                 |       |
                 |       |
                 |       |
-                |       |
-                |       |
-                |       |
-                |       |
                 2-------3
         */
 
-        for (int i = 0; i < rayCaster.rayCount; i++) {
+        // index
+        int i = 0;
+        for (Line ray:rayCaster.rays) {
 
-            // == if the ray intersected something
-            if (!distanceList[i].isEmpty()) {
-
-                // find the smallest distance in the List
-                float minDist = distanceList[i].get(0);
-                for (float f:distanceList[i]) {
-                    if (f < minDist) {
-                        minDist = f;
-                    }
-                }
+            // i.e. if the ray intersected something
+            if (ray.distanceToWall != 0.0f) {
 
                 float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
-                float y = (float) (Window.get().height / 2) / (minDist);
+                float y = (float) (Window.get().height / 2) / ray.distanceToWall;
                 float xl = (float) i * screenPortion - Window.get().width / 2.0f;
                 float xr = (i + 1) * screenPortion - Window.get().width / 2.0f;
 
@@ -256,40 +243,40 @@ public class FirstPersonScene extends Scene{
                 vertexList.add(xl);      //x
                 vertexList.add(y);       //y
                 vertexList.add(0.0f);    //z
-                vertexList.add(wallR);   //r
-                vertexList.add(wallG);   //g
-                vertexList.add(wallB);   //b
-                vertexList.add(1.0f);    //a
+                vertexList.add(ray.r);   //r
+                vertexList.add(ray.g);   //g
+                vertexList.add(ray.b);   //b
+                vertexList.add(ray.a);    //a
 
                 // top right vertex (1)
                 vertexList.add(xr);      //x
                 vertexList.add(y);       //y
                 vertexList.add(0.0f);    //z
-                vertexList.add(wallR);   //r
-                vertexList.add(wallG);   //g
-                vertexList.add(wallB);   //b
-                vertexList.add(1.0f);    //a
+                vertexList.add(ray.r);   //r
+                vertexList.add(ray.g);   //g
+                vertexList.add(ray.b);   //b
+                vertexList.add(ray.a);   //a
 
                 // bottom left vertex (2)
-                vertexList.add(xl);      //x
-                vertexList.add(-y);      //y
-                vertexList.add(0.0f);    //z
-                vertexList.add(wallR);   //r
-                vertexList.add(wallG+0.5f);   //g
-                vertexList.add(wallB+0.5f);   //b
-                vertexList.add(1.0f);    //a
+                vertexList.add(xl);           //x
+                vertexList.add(-y);           //y
+                vertexList.add(0.0f);         //z
+                vertexList.add(ray.r);        //r
+                vertexList.add(ray.g);        //g
+                vertexList.add(ray.b);        //b
+                vertexList.add(ray.a);        //a
 
                 // bottom right vertex (3)
-                vertexList.add(xr);      //x
-                vertexList.add(-y);      //y
-                vertexList.add(0.0f);    //z
-                vertexList.add(wallR);   //r
-                vertexList.add(wallG+0.5f);   //g
-                vertexList.add(wallB+0.5f);   //b
-                vertexList.add(1.0f);    //a
+                vertexList.add(xr);           //x
+                vertexList.add(-y);           //y
+                vertexList.add(0.0f);         //z
+                vertexList.add(ray.r);        //r
+                vertexList.add(ray.g);        //g
+                vertexList.add(ray.b);        //b
+                vertexList.add(ray.a);        //a
             }
+            i++;
         }
-
 
         System.out.print("{");
         for (float f:vertexList) {
@@ -406,7 +393,7 @@ public class FirstPersonScene extends Scene{
         groundVertexList.add(-y);                   //y
         groundVertexList.add(0.0f);                 //z
         groundVertexList.add(map.groundColor.r);    //r
-        groundVertexList.add(map.groundColor.g );   //g
+        groundVertexList.add(map.groundColor.g);    //g
         groundVertexList.add(map.groundColor.b);    //b
         groundVertexList.add(map.groundColor.r);    //a
 
