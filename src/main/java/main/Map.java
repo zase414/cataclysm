@@ -63,20 +63,19 @@ public class Map {
             for (int i = 0; i < wallsArray.size(); i++) {
                 JsonObject wallObj = wallsArray.get(i).getAsJsonObject();
 
-                Line wall = new Line();
+                float x1 = wallObj.get("x1").getAsFloat();
+                float y1 = wallObj.get("y1").getAsFloat();
+                float x2 = wallObj.get("x2").getAsFloat();
+                float y2 = wallObj.get("y2").getAsFloat();
 
-                wall.x1 = wallObj.get("x1").getAsFloat();
-                wall.y1 = wallObj.get("y1").getAsFloat();
-                wall.x2 = wallObj.get("x2").getAsFloat();
-                wall.y2 = wallObj.get("y2").getAsFloat();
+                Line wall = new Line(x1, y1, x2, y2);
+
                 wall.r = wallObj.get("r").getAsFloat();
                 wall.g = wallObj.get("g").getAsFloat();
                 wall.b = wallObj.get("b").getAsFloat();
                 wall.a = wallObj.get("a").getAsFloat();
 
                 System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
-
-                wall.init();
 
                 walls.add(wall);
             }
