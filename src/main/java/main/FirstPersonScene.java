@@ -43,6 +43,7 @@ public class FirstPersonScene extends Scene{
 
         // initialize the player
         player = new Player(map);
+        player.collisionBox.size = 0.5f;
 
         // initialize the camera
         camera = new Camera(new Vector2f());
@@ -91,126 +92,165 @@ public class FirstPersonScene extends Scene{
     @Override
     public void update(float dt) {
 
-        player.viewAngle -= MouseListener.getDX();
-
         {
-        if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
-            player.posX += player.speed * dt * Math.sin(Math.toRadians(player.viewAngle));
-            player.posY += player.speed * dt * Math.cos(Math.toRadians(player.viewAngle));
-        }
-        if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
-            player.posX -= player.speed * dt * Math.sin(Math.toRadians(player.viewAngle));
-            player.posY -= player.speed * dt * Math.cos(Math.toRadians(player.viewAngle));
-        }
-        if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
-            player.posX += player.speed * dt * Math.sin(Math.toRadians(player.viewAngle - 90));
-            player.posY += player.speed * dt * Math.cos(Math.toRadians(player.viewAngle - 90));
-        }
-        if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
-            player.posX += player.speed * dt * Math.sin(Math.toRadians(player.viewAngle + 90));
-            player.posY += player.speed * dt * Math.cos(Math.toRadians(player.viewAngle + 90));
-        }
-        } // keybinds
+            // player view angle
+            player.viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
 
-        {
-        // update the rayCaster == update distances to walls
-        rayCaster.cast(player, map);
-
-        // update the vertexArray and elementArray using the rayCaster
-        List<Float> vertexList = new ArrayList<>();
-        List<Integer> elementList = new ArrayList<>();
-
-        // create background related lists
-        List<Float> skyVertexList;
-        List<Float> groundVertexList;
-        List<Integer> skyElementList;
-        List<Integer> groundElementList;
-
-
-        skyVertexList = skyVertexList(map);
-        groundVertexList = groundVertexList(map);
-
-        skyElementList = skyElementList(0);
-        groundElementList = groundElementList(Collections.max(skyElementList) + 1);
-
-        List<Float> wallVertexList = wallVertexList(rayCaster);
-        List<Integer> wallElementList = wallElementList(wallVertexList.size(), Collections.max(groundElementList) + 1);
-
-        vertexList.addAll(skyVertexList);
-        elementList.addAll(skyElementList);
-        vertexList.addAll(groundVertexList);
-        elementList.addAll(groundElementList);
-        vertexList.addAll(wallVertexList);
-        elementList.addAll(wallElementList);
-
-        this.vertexArray = new float[vertexList.size()];
-
-            for (int i = 0; i < vertexList.size(); i++) {
-                vertexArray[i] = vertexList.get(i);
+            // vector of movement
+            double playerDX = 0.0;
+            double playerDY = 0.0;
+            double strafeMultiplier = 1.0;
+            boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
+            double movementMultipliers = player.speed * dt * strafeMultiplier;
+            if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
+                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
+                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
+            }
+            if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
+                playerDX -= movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
+                playerDY -= movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
+            }
+            if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
+                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle - 90));
+                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle - 90));
+            }
+            if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
+                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle + 90));
+                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle + 90));
             }
 
-        this.elementArray = new int[elementList.size()];
-
-            for (int i = 0; i < elementList.size(); i++) {
-                elementArray[i] = elementList.get(i);
+            if (playerIsStrafing) {
+                playerDX *= Math.sqrt(2) / 2;
+                playerDY *= Math.sqrt(2) / 2;
             }
+
+            player.posX += playerDX;
+            // update coordinates of the collision box
+            player.collisionBox.update(player);
+            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+                System.out.println(" in a wall");
+                player.posX -= playerDX;
+            }
+            player.posY += playerDY;
+            // update coordinates of the collision box
+            player.collisionBox.update(player);
+            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+                System.out.println(" in a wall");
+                player.posY -= playerDY;
+            }
+            // update coordinates of the collision box
+            player.collisionBox.update(player);
+
+            // ==== debug ==== show speed
+            System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
+
+        } // player movement
+
+        {
+            // update the rayCaster == update distances to walls
+            rayCaster.cast(player, map);
+
+            // update the vertexArray and elementArray using the rayCaster
+            List<Float> vertexList = new ArrayList<>();
+            List<Integer> elementList = new ArrayList<>();
+
+            // declare background related lists
+            List<Float> skyVertexList;
+            List<Float> groundVertexList;
+            List<Integer> skyElementList;
+            List<Integer> groundElementList;
+
+            // create background related vertex lists
+            skyVertexList = skyVertexList(map);
+            groundVertexList = groundVertexList(map);
+
+            // create background related element lists
+            skyElementList = skyElementList(0);
+            groundElementList = groundElementList(Collections.max(skyElementList) + 1);
+
+            // create wall related vertex and element lists
+            List<Float> wallVertexList = wallVertexList(rayCaster);
+            List<Integer> wallElementList = wallElementList(wallVertexList.size(), Collections.max(groundElementList) + 1);
+
+            // add all the lists to the final array in the right order
+            vertexList.addAll(skyVertexList);
+            elementList.addAll(skyElementList);
+            vertexList.addAll(groundVertexList);
+            elementList.addAll(groundElementList);
+            vertexList.addAll(wallVertexList);
+            elementList.addAll(wallElementList);
+
+            this.vertexArray = new float[vertexList.size()];
+
+                for (int i = 0; i < vertexList.size(); i++) {
+                    vertexArray[i] = vertexList.get(i);
+                }
+
+            this.elementArray = new int[elementList.size()];
+
+                for (int i = 0; i < elementList.size(); i++) {
+                    elementArray[i] = elementList.get(i);
+                }
 
         } // vertex and element array build
 
-        // use the shader and upload values
-        defaultShader.use();
-        defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
-        defaultShader.uploadMat4f("uView", camera.getViewMatrix());
-        defaultShader.uploadFloat("uTime", Time.getTime());
+        {
+            // use the shader and upload values
+            defaultShader.use();
+            defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+            defaultShader.uploadMat4f("uView", camera.getViewMatrix());
+            defaultShader.uploadFloat("uTime", Time.getTime());
 
-        // ---------------------------------
-        // generate VAO, VBO, EBO and send them to GPU
-        // ---------------------------------
+            // ---------------------------------
+            // generate VAO, VBO, EBO and send them to GPU
+            // ---------------------------------
 
-        glBindVertexArray(vaoID);
+            glBindVertexArray(vaoID);
 
-        // create a float buffer of vertices
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
-        vertexBuffer.put(vertexArray).flip(); // '.flip()' makes OpenGL understand it correctly or something
+            // create a float buffer of vertices
+            FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
+            vertexBuffer.put(vertexArray).flip(); // '.flip()' makes OpenGL understand it correctly or something
 
-        // create VBO upload vertex buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW);
+            // create VBO upload vertex buffer
+            glBindBuffer(GL_ARRAY_BUFFER, vboID);
+            glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW);
 
-        // create the indices and upload
-        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
-        elementBuffer.put(elementArray).flip();
+            // create the indices and upload
+            IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
+            elementBuffer.put(elementArray).flip();
 
-        // create EBO upload element buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
+            // create EBO upload element buffer
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
 
-        // add vertex attribute pointers
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+            // add vertex attribute pointers
+            int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
 
-        // position attributes
-        glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
-        glEnableVertexAttribArray(0);
+            // position attributes
+            glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
+            glEnableVertexAttribArray(0);
 
-        // color attributes
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
-        glEnableVertexAttribArray(1);
+            // color attributes
+            glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
+            glEnableVertexAttribArray(1);
 
-        // draw
-        glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
+            // draw
+            glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
 
-        vertexArray = null;
-        elementArray = null;
+            vertexArray = null;
+            elementArray = null;
 
-        // unbind everything
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glBindVertexArray(0);
-        defaultShader.detach();
+            // unbind everything
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+            glBindVertexArray(0);
+            defaultShader.detach();
 
-        glDeleteBuffers(vaoID);
-        glDeleteBuffers(vboID);
-        glDeleteBuffers(eboID);
+            glDeleteBuffers(vaoID);
+            glDeleteBuffers(vboID);
+            glDeleteBuffers(eboID);
+
+        } // graphics
         MouseListener.endFrame();
     }
 
@@ -278,11 +318,11 @@ public class FirstPersonScene extends Scene{
             i++;
         }
 
-        System.out.print("{");
+        /*System.out.print("{");
         for (float f:vertexList) {
             System.out.print(f + "f, ");
         }
-        System.out.print("}");
+        System.out.print("}");*/
 
         return vertexList;
     }
