@@ -23,6 +23,7 @@ public class Line {
     }
 
     public static Vector2f getIntersection(Line line1, Line line2) {
+        // t is the scale of the line1 vector that ends with the intersection
         Vector2f intersection = new Vector2f();
         float t = getIntersectionT(line1, line2);
 
@@ -34,11 +35,11 @@ public class Line {
 
     public static boolean areIntersecting(Line line1, Line line2) {
 
-        // t, t2 == vector multipliers
+        // t, t2 == vector scale multipliers
         float t = getIntersectionT(line1, line2);
         float t2 = getIntersectionT(line2, line1);
 
-        // the vectors don't have the same root and intersection is on both lines
+        // the t is not "out of bounds"
         return t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax;
     }
 }

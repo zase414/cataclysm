@@ -27,9 +27,9 @@ public class RayCaster {
         List<Line> rays = new ArrayList<>();
 
         float dAngle = fov / (rayCount - 1);
-        System.out.println("angle step = " + dAngle);
+        //System.out.println("angle step = " + dAngle);
         float startAngle = player.viewAngle - fov / 2;
-        System.out.println("start angle = " + startAngle);
+        //System.out.println("start angle = " + startAngle);
         for (int i = 0; i < rayCount; i++) {
             double rayAngle = Math.toRadians(startAngle + i * dAngle);
 
@@ -65,13 +65,13 @@ public class RayCaster {
                     };
 
                     // ==== debug ====
-                    System.out.println("intersection: " + intersection.x + " ; " + intersection.y);
+                    //System.out.println("intersection: " + intersection.x + " ; " + intersection.y);
                 }
             }
             if (minDistance != 0.0 && minDistance < renderDistance + 1) {
                 ray.distanceToWall = minDistance;
             }
-            System.out.println(ray.distanceToWall);
+            //System.out.println(ray.distanceToWall);
         }
         this.rays = rays;
     }

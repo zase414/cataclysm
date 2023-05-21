@@ -75,7 +75,8 @@ public class Map {
                 wall.b = wallObj.get("b").getAsFloat();
                 wall.a = wallObj.get("a").getAsFloat();
 
-                System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
+                // ==== debug ====
+                //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
 
                 walls.add(wall);
             }
