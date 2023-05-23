@@ -1,12 +1,12 @@
 package main;
 
-import com.google.gson.JsonElement;
 import org.joml.Vector2f;
 import util.Color;
-import util.Line;
+import util.Ray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import util.Wall;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.HashSet;
 
 public class Map {
     public String filepath;
-    public HashSet<Line> walls = new HashSet<>();
+    public HashSet<Wall> walls = new HashSet<>();
     public Vector2f spawnPoint = new Vector2f();
     public float spawnViewAngle;
     public Color skyColor = new Color();
@@ -68,7 +68,7 @@ public class Map {
                 float x2 = wallObj.get("x2").getAsFloat();
                 float y2 = wallObj.get("y2").getAsFloat();
 
-                Line wall = new Line(x1, y1, x2, y2);
+                Wall wall = new Wall(x1, y1, x2, y2);
 
                 wall.r = wallObj.get("r").getAsFloat();
                 wall.g = wallObj.get("g").getAsFloat();
