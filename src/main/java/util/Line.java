@@ -2,10 +2,9 @@ package util;
 
 import org.joml.Vector2f;
 
-public class Line {
-    public float x1, y1, x2, y2, dx, dy, r, g, b, a;
+abstract class Line {
+    public float x1, y1, x2, y2, dx, dy;
     static float tMin = 0, tMax = 1;
-    public float distanceToWall;
 
     public Line(float x1, float y1, float x2, float y2) {
         this.x1 = x1;
@@ -26,6 +25,8 @@ public class Line {
         // t is the scale of the line1 vector that ends with the intersection
         Vector2f intersection = new Vector2f();
         float t = getIntersectionT(line1, line2);
+
+        if (t == 0.0f) assert false : "Invalid vector size";
 
         intersection.x = line1.x1 + (line1.dx * t);
         intersection.y = line1.y1 + (line1.dy * t);
