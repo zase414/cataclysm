@@ -4,7 +4,7 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
-import util.Line;
+import util.Ray;
 import util.Time;
 
 import java.nio.FloatBuffer;
@@ -17,20 +17,26 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
 
-public class FirstPersonScene extends Scene{
-
+public class MainScene extends Scene{
     public float[] vertexArray = {};
     private int[] elementArray = {}; // ONLY COUNTER-CLOCKWISE ORDER WORKS
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
-    public FirstPersonScene() { }
     RayCaster rayCaster;
     Map map;
     Player player;
     int positionsSize = 3;
     int colorSize = 4;
     int floatSizeBytes = 4;
+    public static MainScene instance = null;
 
+    public static MainScene get() {
+        if (MainScene.instance == null) {
+            MainScene.instance = new MainScene();
+            instance.init();
+        }
+        return MainScene.instance;
+    }
     @Override
     public void init() {
 
@@ -92,9 +98,26 @@ public class FirstPersonScene extends Scene{
     @Override
     public void update(float dt) {
 
+        if (!KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
+            canSwitchScene = true;
+        } else if (KeyListener.isKeyPressed(GLFW_KEY_TAB) && canSwitchScene) {
+            MapScene.get().canSwitchScene = false;
+            Window.changeScene(2);
+        }
+
+        if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+            glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        } else {
+            glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        //System.out.println(MouseListener.getX() + " | " + MouseListener.getY());
+
         {
-            // player view angle
-            player.viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
+            if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+                // player view angle change
+                player.viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
+                //System.out.println(player.viewAngle);
+            }
 
             // vector of movement
             double playerDX = 0.0;
@@ -102,6 +125,7 @@ public class FirstPersonScene extends Scene{
             double strafeMultiplier = 1.0;
             boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
             double movementMultipliers = player.speed * dt * strafeMultiplier;
+
             if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
                 playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
                 playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
@@ -128,21 +152,21 @@ public class FirstPersonScene extends Scene{
             // update coordinates of the collision box
             player.collisionBox.update(player);
             if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
-                System.out.println(" in a wall");
+                //System.out.println("clipping into a wall");
                 player.posX -= playerDX;
             }
             player.posY += playerDY;
             // update coordinates of the collision box
             player.collisionBox.update(player);
             if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
-                System.out.println(" in a wall");
+                //System.out.println("clipping into a wall");
                 player.posY -= playerDY;
             }
             // update coordinates of the collision box
             player.collisionBox.update(player);
 
             // ==== debug ==== show speed
-            System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
+            //System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
 
         } // player movement
 
@@ -150,33 +174,27 @@ public class FirstPersonScene extends Scene{
             // update the rayCaster == update distances to walls
             rayCaster.cast(player, map);
 
-            // update the vertexArray and elementArray using the rayCaster
             List<Float> vertexList = new ArrayList<>();
             List<Integer> elementList = new ArrayList<>();
 
-            // declare background related lists
-            List<Float> skyVertexList;
-            List<Float> groundVertexList;
-            List<Integer> skyElementList;
-            List<Integer> groundElementList;
+            // create ground related vertex and element lists, add them to the final list
+            List<Float> groundVertexList = groundVertexList(map);
+            List<Integer> groundElementList = groundElementList(getHighestIndex(elementList));
 
-            // create background related vertex lists
-            skyVertexList = skyVertexList(map);
-            groundVertexList = groundVertexList(map);
-
-            // create background related element lists
-            skyElementList = skyElementList(0);
-            groundElementList = groundElementList(Collections.max(skyElementList) + 1);
-
-            // create wall related vertex and element lists
-            List<Float> wallVertexList = wallVertexList(rayCaster);
-            List<Integer> wallElementList = wallElementList(wallVertexList.size(), Collections.max(groundElementList) + 1);
-
-            // add all the lists to the final array in the right order
-            vertexList.addAll(skyVertexList);
-            elementList.addAll(skyElementList);
             vertexList.addAll(groundVertexList);
             elementList.addAll(groundElementList);
+
+            // create sky related vertex and element lists, add them to the final list
+            List<Float> skyVertexList = skyVertexList(map);
+            List<Integer> skyElementList = skyElementList(getHighestIndex(elementList) + 1);
+
+            vertexList.addAll(skyVertexList);
+            elementList.addAll(skyElementList);
+
+            // create wall related vertex and element lists, add them to the final list
+            List<Float> wallVertexList = wallVertexList(rayCaster);
+            List<Integer> wallElementList = wallElementList(wallVertexList.size(), getHighestIndex(elementList) + 1);
+
             vertexList.addAll(wallVertexList);
             elementList.addAll(wallElementList);
 
@@ -269,13 +287,13 @@ public class FirstPersonScene extends Scene{
 
         // index
         int i = 0;
-        for (Line ray:rayCaster.rays) {
+        for (Ray ray:rayCaster.rays) {
 
             // i.e. if the ray intersected something
             if (ray.distanceToWall != 0.0f) {
 
                 float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
-                float y = (float) (Window.get().height / 2) / ray.distanceToWall;
+                float y = (float) (Window.get().height /* / 2 */) / (ray.distanceToWall);
                 float xl = (float) i * screenPortion - Window.get().width / 2.0f;
                 float xr = (i + 1) * screenPortion - Window.get().width / 2.0f;
 
@@ -286,7 +304,7 @@ public class FirstPersonScene extends Scene{
                 vertexList.add(ray.r);   //r
                 vertexList.add(ray.g);   //g
                 vertexList.add(ray.b);   //b
-                vertexList.add(ray.a);    //a
+                vertexList.add(ray.a);   //a
 
                 // top right vertex (1)
                 vertexList.add(xr);      //x
@@ -326,21 +344,21 @@ public class FirstPersonScene extends Scene{
 
         return vertexList;
     }
-    public List<Integer> wallElementList(int wallVertexListLength, int highestPreviousElement) {
+    public List<Integer> wallElementList(int wallVertexListLength, int firstElementIndex) {
 
         // 2 triangles = 6 integers per 4 vertexes in the vertexArray
 
         List<Integer> elementList = new ArrayList<>();
 
         for (int i = 0; i < (wallVertexListLength / 28); i++) {
-            // element number shift
+            // vertexes in a rectangle
             int v = 4 * i;
-            elementList.add(highestPreviousElement + 0 + v);
-            elementList.add(highestPreviousElement + 2 + v);
-            elementList.add(highestPreviousElement + 1 + v);
-            elementList.add(highestPreviousElement + 1 + v);
-            elementList.add(highestPreviousElement + 2 + v);
-            elementList.add(highestPreviousElement + 3 + v);
+            elementList.add(firstElementIndex + 0 + v);
+            elementList.add(firstElementIndex + 2 + v);
+            elementList.add(firstElementIndex + 1 + v);
+            elementList.add(firstElementIndex + 1 + v);
+            elementList.add(firstElementIndex + 2 + v);
+            elementList.add(firstElementIndex + 3 + v);
         }
        return elementList;
     }
@@ -391,14 +409,14 @@ public class FirstPersonScene extends Scene{
         return skyVertexList;
     }
 
-    public List<Integer> skyElementList(int highestPreviousElement) {
+    public List<Integer> skyElementList(int firstElementIndex) {
         List<Integer> skyElementList = new ArrayList<>();
-        skyElementList.add(highestPreviousElement + 0);
-        skyElementList.add(highestPreviousElement + 2);
-        skyElementList.add(highestPreviousElement + 1);
-        skyElementList.add(highestPreviousElement + 1);
-        skyElementList.add(highestPreviousElement + 2);
-        skyElementList.add(highestPreviousElement + 3);
+        skyElementList.add(firstElementIndex + 0);
+        skyElementList.add(firstElementIndex + 2);
+        skyElementList.add(firstElementIndex + 1);
+        skyElementList.add(firstElementIndex + 1);
+        skyElementList.add(firstElementIndex + 2);
+        skyElementList.add(firstElementIndex + 3);
         return skyElementList;
     }
     public List<Float> groundVertexList(Map map) {
@@ -447,14 +465,14 @@ public class FirstPersonScene extends Scene{
         return groundVertexList;
     }
 
-    public List<Integer> groundElementList(int highestPreviousElement) {
+    public List<Integer> groundElementList(int firstElementIndex) {
         List<Integer> skyElementList = new ArrayList<>();
-        skyElementList.add(highestPreviousElement + 0);
-        skyElementList.add(highestPreviousElement + 2);
-        skyElementList.add(highestPreviousElement + 1);
-        skyElementList.add(highestPreviousElement + 1);
-        skyElementList.add(highestPreviousElement + 2);
-        skyElementList.add(highestPreviousElement + 3);
+        skyElementList.add(firstElementIndex + 0);
+        skyElementList.add(firstElementIndex + 2);
+        skyElementList.add(firstElementIndex + 1);
+        skyElementList.add(firstElementIndex + 1);
+        skyElementList.add(firstElementIndex + 2);
+        skyElementList.add(firstElementIndex + 3);
         return skyElementList;
     }
 }
