@@ -14,17 +14,13 @@ public class Window {
     public int width, height;
     public float r, g, b, a;
     private String title;
-    private long glfwWindow;
+    long glfwWindow;
     public static Scene currentScene = null;
-    private static Window window = null;
+    static Window window = null;
     private Window() {
         this.width = 1920;
         this.height = 1080;
         this.title = "cataclysm";
-        r = 1;
-        g = 1;
-        b = 1;
-        a = 1;
     }
 
     public static Window get() {
@@ -36,23 +32,36 @@ public class Window {
 
     public static void changeScene(int newScene) {
         switch (newScene) {
-            case 0:
+            case 0 -> {
                 System.out.println("Scene -> Menu");
                 currentScene = new MenuScene();
+                // un-clip the mouse, remember the coordinates
+                float mouseX = MouseListener.getX();
+                float mouseY = MouseListener.getY();
+                glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetCursorPos(Window.window.glfwWindow, mouseX, mouseY);
                 currentScene.init();
-                break;
-            case 1:
+            }
+            case 1 -> {
                 System.out.println("Scene -> FPV");
-                currentScene = new FirstPersonScene();
-                currentScene.init();
-                break;
-            case 2:
+
+                // switch scene and initialize it if needed
+                currentScene = MainScene.get();
+
+                // clip the mouse to the window
+                glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            case 2 -> {
                 System.out.println("Scene -> Map");
-                currentScene = new LevelScene();
+                currentScene = new MapScene();
+
+                // clip the mouse to the window
+                glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 currentScene.init();
-                break;
-            default:
+            }
+            default -> {
                 assert false : "Unknown scene '" + newScene + "'";
+            }
         }
     }
 
@@ -137,8 +146,6 @@ public class Window {
             if (KeyListener.isKeyPressed(GLFW_KEY_F3)) {
                 changeScene(2);
             }
-
-
 
             glfwSwapBuffers(glfwWindow);
 
