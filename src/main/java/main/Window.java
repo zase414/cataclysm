@@ -12,7 +12,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
     public int width, height;
-    public float r, g, b, a;
+    public float r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f; // default background color
     private String title;
     long glfwWindow;
     public static Scene currentScene = null;
@@ -34,7 +34,7 @@ public class Window {
         switch (newScene) {
             case 0 -> {
                 System.out.println("Scene -> Menu");
-                currentScene = new MenuScene();
+                currentScene = MenuScene.get();
                 // un-clip the mouse, remember the coordinates
                 float mouseX = MouseListener.getX();
                 float mouseY = MouseListener.getY();
@@ -44,20 +44,17 @@ public class Window {
             }
             case 1 -> {
                 System.out.println("Scene -> FPV");
-
                 // switch scene and initialize it if needed
                 currentScene = MainScene.get();
-
                 // clip the mouse to the window
                 glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
             case 2 -> {
                 System.out.println("Scene -> Map");
-                currentScene = new MapScene();
-
+                // switch scene and initialize it if needed
+                currentScene = MapScene.get();
                 // clip the mouse to the window
                 glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                currentScene.init();
             }
             default -> {
                 assert false : "Unknown scene '" + newScene + "'";
@@ -115,6 +112,10 @@ public class Window {
 
         // enable bindings
         GL.createCapabilities();
+
+        // render based on how far away the vertexes are
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
 
         Window.changeScene(0);
     }

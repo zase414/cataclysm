@@ -4,13 +4,13 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import util.CollisionBox;
 import util.Ray;
 import util.Time;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -18,18 +18,14 @@ import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public class MainScene extends Scene{
-    public float[] vertexArray = {};
-    private int[] elementArray = {}; // ONLY COUNTER-CLOCKWISE ORDER WORKS
+    public float[] vertexArray = {1.0f};
+    private int[] elementArray = {};
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
     RayCaster rayCaster;
     Map map;
     Player player;
-    int positionsSize = 3;
-    int colorSize = 4;
-    int floatSizeBytes = 4;
     public static MainScene instance = null;
-
     public static MainScene get() {
         if (MainScene.instance == null) {
             MainScene.instance = new MainScene();
@@ -39,13 +35,14 @@ public class MainScene extends Scene{
     }
     @Override
     public void init() {
-
-        // initialize the rayCaster
-        rayCaster = new RayCaster(70,1000,400, 150);
+        keyWasPressed.put(GLFW_KEY_TAB, false);
 
         // initialize the map
         map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
         map.compile();
+
+        // initialize the rayCaster
+        rayCaster = new RayCaster(Settings.fov, Settings.renderDistance, Settings.rayCount, Settings.fadeOutDistance);
 
         // initialize the player
         player = new Player(map);
@@ -98,11 +95,20 @@ public class MainScene extends Scene{
     @Override
     public void update(float dt) {
 
-        if (!KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-            canSwitchScene = true;
-        } else if (KeyListener.isKeyPressed(GLFW_KEY_TAB) && canSwitchScene) {
-            MapScene.get().canSwitchScene = false;
-            Window.changeScene(2);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        rayCaster.rayCount = Math.max(rayCaster.rayCount + (int) MouseListener.getScrollY(), 5);
+        System.out.println("Number of rays: " + rayCaster.rayCount);
+        try {
+            if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
+                keyWasPressed.replace(GLFW_KEY_TAB, true);
+            } else if (keyWasPressed.get(GLFW_KEY_TAB)) {
+                Window.changeScene(2);
+                keyWasPressed.replace(GLFW_KEY_TAB, false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            assert false : "key has not been initialized in the HashMap";
         }
 
         if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
@@ -110,7 +116,6 @@ public class MainScene extends Scene{
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
-        //System.out.println(MouseListener.getX() + " | " + MouseListener.getY());
 
         {
             if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
@@ -150,20 +155,20 @@ public class MainScene extends Scene{
 
             player.posX += playerDX;
             // update coordinates of the collision box
-            player.collisionBox.update(player);
-            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+            player.updateCollisionBox();
+            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
                 //System.out.println("clipping into a wall");
                 player.posX -= playerDX;
             }
             player.posY += playerDY;
             // update coordinates of the collision box
-            player.collisionBox.update(player);
-            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+            player.updateCollisionBox();
+            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
                 //System.out.println("clipping into a wall");
                 player.posY -= playerDY;
             }
             // update coordinates of the collision box
-            player.collisionBox.update(player);
+            player.updateCollisionBox();
 
             // ==== debug ==== show speed
             //System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
@@ -198,17 +203,15 @@ public class MainScene extends Scene{
             vertexList.addAll(wallVertexList);
             elementList.addAll(wallElementList);
 
-            this.vertexArray = new float[vertexList.size()];
+            vertexArray = new float[vertexList.size()];
+            for (int i = 0; i < vertexList.size(); i++) {
+                vertexArray[i] = vertexList.get(i);
+            }
 
-                for (int i = 0; i < vertexList.size(); i++) {
-                    vertexArray[i] = vertexList.get(i);
-                }
-
-            this.elementArray = new int[elementList.size()];
-
-                for (int i = 0; i < elementList.size(); i++) {
-                    elementArray[i] = elementList.get(i);
-                }
+            elementArray = new int[elementList.size()];
+            for (int i = 0; i < elementList.size(); i++) {
+                elementArray[i] = elementList.get(i);
+            }
 
         } // vertex and element array build
 
@@ -264,10 +267,6 @@ public class MainScene extends Scene{
             glBindVertexArray(0);
             defaultShader.detach();
 
-            glDeleteBuffers(vaoID);
-            glDeleteBuffers(vboID);
-            glDeleteBuffers(eboID);
-
         } // graphics
         MouseListener.endFrame();
     }
@@ -275,148 +274,57 @@ public class MainScene extends Scene{
     public List<Float> wallVertexList(RayCaster rayCaster) {
 
         List<Float> vertexList = new ArrayList<>();
+        List<List<Ray>> chainList = divideRays(rayCaster.rays);
 
-        /*
-                0-------1
-                |       |
-                |       |
-                |       |
-                |       |
-                2-------3
-        */
+        for (List<Ray> rayList : chainList) {
+            Ray startRay = rayList.get(0);
+            Ray endRay = rayList.get(rayList.size()-1);
+            float startDistance = startRay.distanceToWall;
+            float endDistance = endRay.distanceToWall;
+            int i = startRay.id;
+            int di = endRay.id - startRay.id + 1;
 
-        // index
-        int i = 0;
-        for (Ray ray:rayCaster.rays) {
+            float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
+            float ys = (float) (Window.get().height) / (startDistance); // y coordinate of start
+            float ye = (float) (Window.get().height) / (endDistance);
+            float xl = (float) i * screenPortion - Window.get().width / 2.0f;
+            float xr = (i + di) * screenPortion - Window.get().width / 2.0f;
+            float rs = startRay.r, gs = startRay.g, bs = startRay.b, as = startRay.a;
+            float re = endRay.r, ge = endRay.g, be = endRay.b, ae = endRay.a;
 
-            // i.e. if the ray intersected something
-            if (ray.distanceToWall != 0.0f) {
-
-                float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
-                float y = (float) (Window.get().height /* / 2 */) / (ray.distanceToWall);
-                float xl = (float) i * screenPortion - Window.get().width / 2.0f;
-                float xr = (i + 1) * screenPortion - Window.get().width / 2.0f;
-
-                // top left vertex (0)
-                vertexList.add(xl);      //x
-                vertexList.add(y);       //y
-                vertexList.add(0.0f);    //z
-                vertexList.add(ray.r);   //r
-                vertexList.add(ray.g);   //g
-                vertexList.add(ray.b);   //b
-                vertexList.add(ray.a);   //a
-
-                // top right vertex (1)
-                vertexList.add(xr);      //x
-                vertexList.add(y);       //y
-                vertexList.add(0.0f);    //z
-                vertexList.add(ray.r);   //r
-                vertexList.add(ray.g);   //g
-                vertexList.add(ray.b);   //b
-                vertexList.add(ray.a);   //a
-
-                // bottom left vertex (2)
-                vertexList.add(xl);           //x
-                vertexList.add(-y);           //y
-                vertexList.add(0.0f);         //z
-                vertexList.add(ray.r);        //r
-                vertexList.add(ray.g);        //g
-                vertexList.add(ray.b);        //b
-                vertexList.add(ray.a);        //a
-
-                // bottom right vertex (3)
-                vertexList.add(xr);           //x
-                vertexList.add(-y);           //y
-                vertexList.add(0.0f);         //z
-                vertexList.add(ray.r);        //r
-                vertexList.add(ray.g);        //g
-                vertexList.add(ray.b);        //b
-                vertexList.add(ray.a);        //a
-            }
-            i++;
+            addVertex(vertexList, xl, ys, 1/startDistance, rs, gs, bs, as);
+            addVertex(vertexList, xr, ye, 1/endDistance, re, ge, be, ae);
+            addVertex(vertexList, xl, -ys, 1/startDistance, rs, gs, bs, as);
+            addVertex(vertexList, xr, -ye, 1/endDistance, re, ge, be, ae);
         }
-
-        /*System.out.print("{");
-        for (float f:vertexList) {
-            System.out.print(f + "f, ");
-        }
-        System.out.print("}");*/
-
         return vertexList;
     }
     public List<Integer> wallElementList(int wallVertexListLength, int firstElementIndex) {
-
+        List<Integer> wallElementList = new ArrayList<>();
         // 2 triangles = 6 integers per 4 vertexes in the vertexArray
-
-        List<Integer> elementList = new ArrayList<>();
-
-        for (int i = 0; i < (wallVertexListLength / 28); i++) {
-            // vertexes in a rectangle
-            int v = 4 * i;
-            elementList.add(firstElementIndex + 0 + v);
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 3 + v);
+        for (int i = 0; i < (wallVertexListLength / (vertexVariables * 4)); i++) {
+            addQuadShapeElements(wallElementList, firstElementIndex, i);
         }
-       return elementList;
+       return wallElementList;
     }
 
     public List<Float> skyVertexList(Map map) {
         List<Float> skyVertexList = new ArrayList<>();
-
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
+        float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
 
-        // top left
-        skyVertexList.add(xl);                //x
-        skyVertexList.add(y);                 //y
-        skyVertexList.add(0.0f);              //z
-        skyVertexList.add(map.skyColor.r);    //r
-        skyVertexList.add(map.skyColor.g);    //g
-        skyVertexList.add(map.skyColor.b);    //b
-        skyVertexList.add(map.skyColor.a);    //a
-
-        // top right
-        skyVertexList.add(xr);                //x
-        skyVertexList.add(y);                 //y
-        skyVertexList.add(0.0f);              //z
-        skyVertexList.add(map.skyColor.r);    //r
-        skyVertexList.add(map.skyColor.g);    //g
-        skyVertexList.add(map.skyColor.b);    //b
-        skyVertexList.add(map.skyColor.a);    //a
-
-        // bottom left
-        skyVertexList.add(xl);                                       //x
-        skyVertexList.add(0.0f);                                     //y
-        skyVertexList.add(0.0f);                                     //z
-        skyVertexList.add(Math.max(map.skyColor.r - 0.2f, 0.0f));    //r
-        skyVertexList.add(Math.max(map.skyColor.g - 0.2f, 0.0f));    //g
-        skyVertexList.add(Math.max(map.skyColor.b - 0.2f, 0.0f));    //b
-        skyVertexList.add(map.skyColor.r);                           //a
-
-        // bottom right
-        skyVertexList.add(xr);                                       //x
-        skyVertexList.add(0.0f);                                     //y
-        skyVertexList.add(0.0f);                                     //z
-        skyVertexList.add(Math.max(map.skyColor.r - 0.2f, 0.0f));    //r
-        skyVertexList.add(Math.max(map.skyColor.g - 0.2f, 0.0f));    //g
-        skyVertexList.add(Math.max(map.skyColor.b - 0.2f, 0.0f));    //b
-        skyVertexList.add(map.skyColor.a);                           //a
-
+        addVertex(skyVertexList, xl, y, 0.0f, r, g, b, a); // top left
+        addVertex(skyVertexList, xr, y, 0.0f, r, g, b, a); // top right
+        addVertex(skyVertexList, xl, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom left
+        addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom right
         return skyVertexList;
     }
 
     public List<Integer> skyElementList(int firstElementIndex) {
         List<Integer> skyElementList = new ArrayList<>();
-        skyElementList.add(firstElementIndex + 0);
-        skyElementList.add(firstElementIndex + 2);
-        skyElementList.add(firstElementIndex + 1);
-        skyElementList.add(firstElementIndex + 1);
-        skyElementList.add(firstElementIndex + 2);
-        skyElementList.add(firstElementIndex + 3);
+        addQuadShapeElements(skyElementList, firstElementIndex, 0);
         return skyElementList;
     }
     public List<Float> groundVertexList(Map map) {
@@ -425,54 +333,18 @@ public class MainScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-
-        // top left
-        groundVertexList.add(xl);                                          //x
-        groundVertexList.add(0.0f);                                        //y
-        groundVertexList.add(0.0f);                                        //z
-        groundVertexList.add(Math.max(map.groundColor.r - 0.2f, 0.0f));    //r
-        groundVertexList.add(Math.max(map.groundColor.g - 0.2f, 0.0f));    //g
-        groundVertexList.add(Math.max(map.groundColor.b - 0.2f, 0.0f));    //b
-        groundVertexList.add(map.groundColor.a);                           //a
-
-        // top right
-        groundVertexList.add(xr);                                          //x
-        groundVertexList.add(0.0f);                                        //y
-        groundVertexList.add(0.0f);                                        //z
-        groundVertexList.add(Math.max(map.groundColor.r - 0.2f, 0.0f));    //r
-        groundVertexList.add(Math.max(map.groundColor.g - 0.2f, 0.0f));    //g
-        groundVertexList.add(Math.max(map.groundColor.b - 0.2f, 0.0f));    //b
-        groundVertexList.add(map.groundColor.a);    //a
-
-        // bottom left
-        groundVertexList.add(xl);                   //x
-        groundVertexList.add(-y);                   //y
-        groundVertexList.add(0.0f);                 //z
-        groundVertexList.add(map.groundColor.r);    //r
-        groundVertexList.add(map.groundColor.g);    //g
-        groundVertexList.add(map.groundColor.b);    //b
-        groundVertexList.add(map.groundColor.r);    //a
-
-        // bottom right
-        groundVertexList.add(xr);                   //x
-        groundVertexList.add(-y);                   //y
-        groundVertexList.add(0.0f);                 //z
-        groundVertexList.add(map.groundColor.r);    //r
-        groundVertexList.add(map.groundColor.g);    //g
-        groundVertexList.add(map.groundColor.b);    //b
-        groundVertexList.add(map.groundColor.a);    //a
-
+        float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
+        addVertex(groundVertexList, xl, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a); // top left
+        addVertex(groundVertexList, xr, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a); // top right
+        addVertex(groundVertexList, xl, -y, 0.0f, r, g, b, a); // bottom left
+        addVertex(groundVertexList, xr, -y, 0.0f, r, g, b, a); // bottom right
         return groundVertexList;
     }
-
     public List<Integer> groundElementList(int firstElementIndex) {
-        List<Integer> skyElementList = new ArrayList<>();
-        skyElementList.add(firstElementIndex + 0);
-        skyElementList.add(firstElementIndex + 2);
-        skyElementList.add(firstElementIndex + 1);
-        skyElementList.add(firstElementIndex + 1);
-        skyElementList.add(firstElementIndex + 2);
-        skyElementList.add(firstElementIndex + 3);
-        return skyElementList;
+        List<Integer> groundElementList = new ArrayList<>();
+        addQuadShapeElements(groundElementList, firstElementIndex, 0);
+        return groundElementList;
     }
+
+
 }

@@ -42,6 +42,7 @@ public class RayCaster {
 
             Ray ray = new Ray(x1, y1, x2, y2);
 
+            ray.id = i;
             rays.add(ray);
         }
         for (Ray ray:rays) {
@@ -50,7 +51,8 @@ public class RayCaster {
                 if (Ray.areIntersecting(ray,wall)) {
                     // calculate the distance of the intersection to the player
                     Vector2f intersection = Ray.getIntersection(ray,wall);
-                    ray.intersectedSomething = true;
+                    float intersectionT = Ray.getIntersectionT(ray, wall);
+                    ray.intersectedAnything = true;
 
                     double dx = player.posX - intersection.x;
                     double dy = player.posY - intersection.y;
@@ -62,8 +64,11 @@ public class RayCaster {
                         ray.g = Math.max(Math.min(wall.g - wall.g * (minDistance / fadeOutDistance), wall.g), wall.g / 100.0f);
                         ray.b = Math.max(Math.min(wall.b - wall.b * (minDistance / fadeOutDistance), wall.b), wall.b / 100.0f);
                         ray.a = wall.a;
-                        ray.intersectionWall = intersection;
+                        ray.firstIntersection = intersection;
+                        ray.intersectedWall = wall;
+                        ray.intersectionT = intersectionT;
                     }
+
 
                     // ==== debug ====
                     //System.out.println("intersection: " + intersection.x + " ; " + intersection.y);
@@ -76,18 +81,5 @@ public class RayCaster {
             //System.out.println(ray.distanceToWall);
         }
         this.rays = rays;
-    }
-    public static void main(String[] args) {
-
-        // TEST
-        Map map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
-        map.compile();
-        Player player = new Player(map);
-        System.out.println("x: " + player.posX + ", y: " + player.posY + ", angle: " + player.viewAngle);
-
-        RayCaster rayCaster = new RayCaster(100, 1000, 100, 300);
-        rayCaster.cast(player, map);
-        System.out.println("renderDistance: " + rayCaster.renderDistance + ", fov: " + rayCaster.fov + ", rayCount: " + rayCaster.rayCount);
-
     }
 }

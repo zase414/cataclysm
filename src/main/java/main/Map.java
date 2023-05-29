@@ -60,6 +60,7 @@ public class Map {
 
             // extract walls coordinates
             JsonArray wallsArray = jsonObject.getAsJsonArray("walls");
+            int id = 0;
             for (int i = 0; i < wallsArray.size(); i++) {
                 JsonObject wallObj = wallsArray.get(i).getAsJsonObject();
 
@@ -77,17 +78,13 @@ public class Map {
 
                 // ==== debug ====
                 //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
-
+                wall.id = id;
                 walls.add(wall);
+                id++;
             }
         } catch (IOException e) {
             e.printStackTrace();
             assert false : "Error: could not open file for map: '" + filepath + "'";
         }
-    }
-
-    public static void main(String[] args) {
-        Map map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
-        map.compile();
     }
 }

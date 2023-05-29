@@ -13,6 +13,8 @@ abstract class Line {
         this.y2 = y2;
     }
 
+    public Line() {}
+
     public static float getIntersectionT(Line line1, Line line2) {
         line1.dx = line1.x2 - line1.x1;
         line1.dy = line1.y2 - line1.y1;
@@ -26,7 +28,7 @@ abstract class Line {
         Vector2f intersection = new Vector2f();
         float t = getIntersectionT(line1, line2);
 
-        if (t == 0.0f) assert false : "Invalid vector size";
+        assert t != 0.0f : "Invalid vector size";
 
         intersection.x = line1.x1 + (line1.dx * t);
         intersection.y = line1.y1 + (line1.dy * t);

@@ -1,9 +1,11 @@
 package main;
 
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import util.CollisionBox;
 import util.Ray;
 import util.Time;
 import util.Wall;
@@ -18,8 +20,8 @@ import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public class MapScene extends Scene{
-    public float[] vertexArray = {};
-    private int[] elementArray = {}; // ONLY COUNTER-CLOCKWISE ORDER WORKS
+    public float[] vertexArray = {0.0f};
+    private int[] elementArray = {0}; // ONLY COUNTER-CLOCKWISE ORDER WORKS
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
     RayCaster rayCaster;
@@ -30,7 +32,6 @@ public class MapScene extends Scene{
     int floatSizeBytes = 4;
     float mapZoom = 10.0f, minMapZoom = 1.0f, maxMapZoom = 40.0f;
     public static MapScene instance = null;
-
     public static MapScene get() {
         if (MapScene.instance == null) {
             MapScene.instance = new MapScene();
@@ -97,30 +98,28 @@ public class MapScene extends Scene{
     @Override
     public void update(float dt) {
 
-        if (!KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-            canSwitchScene = true;
-        } else if (KeyListener.isKeyPressed(GLFW_KEY_TAB) && canSwitchScene) {
-            MainScene.get().canSwitchScene = false;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (!KeyListener.isKeyPressed(GLFW_KEY_TAB) && keyWasPressed.get(GLFW_KEY_TAB)) {
             Window.changeScene(1);
+            keyWasPressed.put(GLFW_KEY_TAB, false);
+        }
+        if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
+            keyWasPressed.put(GLFW_KEY_TAB, true);
         }
 
-        // show mouse cursor
+
         if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
 
+            // show mouse cursor
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-            // map camera moving and zooming
-            mapZoom = Math.min(Math.max(MouseListener.getScrollY() + mapZoom, minMapZoom), maxMapZoom);
-            if (MouseListener.getScrollY() > 0) {
-                camera.position.x += (MouseListener.getX() - Window.window.width / 2.0f) * MouseListener.getScrollY() * 0.1f;
-                camera.position.y -= (MouseListener.getY() - Window.window.height / 2.0f) * MouseListener.getScrollY() * 0.1f;
-            } else {
-                camera.position.x += (MouseListener.getScrollY() * 0.1f) * camera.position.x;
-                camera.position.y += (MouseListener.getScrollY() * 0.1f) * camera.position.y;
-            }
+            updateMapZoom();
 
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            rayCaster.rayCount = Math.max(rayCaster.rayCount + (int) MouseListener.getScrollY(), 5);
+            System.out.println("Number of rays: " + rayCaster.rayCount);
         }
 
         // ==== debug ==== show cursor coordinates
@@ -134,50 +133,49 @@ public class MapScene extends Scene{
             }
 
             // vector of movement
-            double playerDX = 0.0;
-            double playerDY = 0.0;
+            Vector2d dPos = new Vector2d(0.0, 0.0);
             double strafeMultiplier = 1.0;
             boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
             double movementMultipliers = player.speed * dt * strafeMultiplier;
 
             if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
+                dPos.x += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
+                dPos.y += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
             }
             if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
-                playerDX -= movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
-                playerDY -= movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
+                dPos.x -= movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
+                dPos.y -= movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
             }
             if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle - 90));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle - 90));
+                dPos.x += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle - 90));
+                dPos.y += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle - 90));
             }
             if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle + 90));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle + 90));
+                dPos.x += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle + 90));
+                dPos.y += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle + 90));
             }
 
             if (playerIsStrafing) {
-                playerDX *= Math.sqrt(2) / 2;
-                playerDY *= Math.sqrt(2) / 2;
+                dPos.x *= Math.sqrt(2) / 2;
+                dPos.y *= Math.sqrt(2) / 2;
             }
 
-            player.posX += playerDX;
+            player.posX += dPos.x;
             // update coordinates of the collision box
-            player.collisionBox.update(player);
-            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+            player.updateCollisionBox();
+            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
                 //System.out.println("clipping into a wall");
-                player.posX -= playerDX;
+                player.posX -= dPos.x;
             }
-            player.posY += playerDY;
+            player.posY += dPos.y;
             // update coordinates of the collision box
-            player.collisionBox.update(player);
-            if (player.collisionBox.checkForCollisionsPlayer(map, player)) {
+            player.updateCollisionBox();
+            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
                 //System.out.println("clipping into a wall");
-                player.posY -= playerDY;
+                player.posY -= dPos.y;
             }
             // update coordinates of the collision box
-            player.collisionBox.update(player);
+            player.updateCollisionBox();
 
             // ==== debug ==== show speed
             //System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
@@ -198,6 +196,13 @@ public class MapScene extends Scene{
             vertexList.addAll(wallVertexList);
             elementList.addAll(wallElementList);
 
+            // create cast rays vertex and element lists, add them to the final list
+            List<Float> rayVertexList = rayVertexList(rayCaster, player);
+            List<Integer> rayElementList = rayElementList(rayVertexList.size(), getHighestIndex(elementList) + 1);
+
+            vertexList.addAll(rayVertexList);
+            elementList.addAll(rayElementList);
+
             // create intersection related vertex and element lists, add them to the final list
             List<Float> intersectionVertexList = intersectionVertexList(rayCaster);
             List<Integer> intersectionElementList = intersectionElementList(intersectionVertexList.size(), getHighestIndex(elementList) + 1);
@@ -211,7 +216,6 @@ public class MapScene extends Scene{
 
             vertexList.addAll(playerVertexList);
             elementList.addAll(playerElementList);
-
 
             // make it an array
             this.vertexArray = new float[vertexList.size()];
@@ -280,188 +284,110 @@ public class MapScene extends Scene{
             glBindVertexArray(0);
             defaultShader.detach();
 
-            glDeleteBuffers(vaoID);
-            glDeleteBuffers(vboID);
-            glDeleteBuffers(eboID);
-
         } // graphics
         MouseListener.endFrame();
     }
 
-    public List<Float> wallVertexList(Map map) {
+    public void updateMapZoom() {
+        // map camera moving and zooming
+        mapZoom = Math.min(Math.max(MouseListener.getScrollY() + mapZoom, minMapZoom), maxMapZoom);
 
+        if (MouseListener.getScrollY() > 0) {
+            camera.position.x += (MouseListener.getX() - Window.window.width / 2.0f) * MouseListener.getScrollY() * 0.1f;
+            camera.position.y -= (MouseListener.getY() - Window.window.height / 2.0f) * MouseListener.getScrollY() * 0.1f;
+        } else {
+            camera.position.x += (MouseListener.getScrollY() * 0.1f) * camera.position.x;
+            camera.position.y += (MouseListener.getScrollY() * 0.1f) * camera.position.y;
+        }
+    }
+
+    public List<Float> wallVertexList(Map map) {
         List<Float> vertexList = new ArrayList<>();
 
         float width = 1.0f;
         float zoom = mapZoom;
 
         for (Wall wall:map.walls) {
-
-            addRectangleToVertexList(vertexList, wall.x1, wall.y1, zoom, width, 1.0f, 1.0f, 1.0f, 1.0f);
-            addRectangleToVertexList(vertexList, wall.x2, wall.y2, zoom, width, 1.0f, 1.0f, 1.0f, 1.0f);
+            addSquareVertexes(vertexList, wall.x1, wall.y1, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
+            addSquareVertexes(vertexList, wall.x2, wall.y2, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
         }
 
         return vertexList;
     }
     public List<Integer> wallElementList(int wallVertexListLength, int firstElementIndex) {
-
         List<Integer> elementList = new ArrayList<>();
 
         // for every 2 squares = edges of wall
-        for (int i = 0; i < (wallVertexListLength / 54); i++) {
-            int v = 8 * i;
-            // x1, y1
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 0 + v);
-
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 3 + v);
-
-            // x2, y2
-            elementList.add(firstElementIndex + 6 + v);
-            elementList.add(firstElementIndex + 5 + v);
-            elementList.add(firstElementIndex + 4 + v);
-
-            elementList.add(firstElementIndex + 5 + v);
-            elementList.add(firstElementIndex + 6 + v);
-            elementList.add(firstElementIndex + 7 + v);
-
-            // connection
-            elementList.add(firstElementIndex + 0 + v);
-            elementList.add(firstElementIndex + 4 + v);
-            elementList.add(firstElementIndex + 5 + v);
-
-            elementList.add(firstElementIndex + 5 + v);
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 0 + v);
-
-            elementList.add(firstElementIndex + 0 + v);
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 6 + v);
-
-            elementList.add(firstElementIndex + 6 + v);
-            elementList.add(firstElementIndex + 4 + v);
-            elementList.add(firstElementIndex + 0 + v);
-
+        for (int i = 0; i < (wallVertexListLength / (vertexVariables * 8)); i++) {
+            addQuadBeamElements(elementList, firstElementIndex, i);
         }
-
         return elementList;
     }
-
     public List<Float> intersectionVertexList(RayCaster rayCaster) {
-
         List<Float> vertexList = new ArrayList<>();
-
+        List<List<Ray>> chainList = divideRays(rayCaster.rays);
         float width = 1.0f;
         float zoom = mapZoom;
 
-        for (Ray ray:rayCaster.rays) {
-            if (ray.intersectedSomething) {
-                float startX = ray.intersectionWall.x;
-                float startY = ray.intersectionWall.y;
+        for (List<Ray> sameWallRays : chainList) {
+            Ray startRay = sameWallRays.get(0);
+            Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
+            float startX = startRay.firstIntersection.x;
+            float startY = startRay.firstIntersection.y;
+            float endX = endRay.firstIntersection.x;
+            float endY = endRay.firstIntersection.y;
 
-                addRectangleToVertexList(vertexList, startX, startY, zoom, width, 1.0f, 0.2f, 0.2f, 1.0f);
-            }
+            addSquareVertexes(vertexList, startX, startY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
+            addSquareVertexes(vertexList, endX, endY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
         }
-
-       /* for (float f: vertexList) {
-            System.out.print(f + " ");
-        }*/
-
         return vertexList;
     }
     public List<Integer> intersectionElementList(int intersectionVertexListLength, int firstElementIndex) {
-
-        // every 4 vertexes = 3 items
-        // i.e. every 28 floats = 3 items
-
         List<Integer> elementList = new ArrayList<>();
-
-        for (int i = 0; i < (intersectionVertexListLength / 28); i++) {
-            // vertexes in a rectangle
-            int v = 4 * i;
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 0 + v);
-
-            elementList.add(firstElementIndex + 1 + v);
-            elementList.add(firstElementIndex + 2 + v);
-            elementList.add(firstElementIndex + 3 + v);
+        // every 28 floats = 6 values
+        for (int i = 0; i < (intersectionVertexListLength / (vertexVariables * 8)); i++) {
+            addQuadBeamElements(elementList, firstElementIndex, i);
         }
-
         return elementList;
     }
-
     public List<Float> playerVertexList(Player player) {
-
         List<Float> vertexList = new ArrayList<>();
 
-        float width = player.collisionBox.size * mapZoom;
+        float size = 1.0f;
         float zoom = mapZoom;
-
-                addRectangleToVertexList(vertexList, player.posX, player.posY, zoom, width, 0.2f, 0.2f, 1.0f, 1.0f);
-
-       /* for (float f: vertexList) {
-            System.out.print(f + " ");
-        }*/
-
+        float z = 10.0f;
+        addPlayerShapeVertexes(vertexList, player.posX, player.posY, z, player.viewAngle, zoom, size, 0.9f, 0.9f, 0.0f, 1.0f);
         return vertexList;
     }
-
     public List<Integer> playerElementList(int firstElementIndex) {
-
-        // every 4 vertexes = 3 items
-        // i.e. every 28 floats = 3 items
-
         List<Integer> elementList = new ArrayList<>();
 
-        elementList.add(firstElementIndex + 2);
-        elementList.add(firstElementIndex + 1);
-        elementList.add(firstElementIndex + 0);
-
-        elementList.add(firstElementIndex + 1);
-        elementList.add(firstElementIndex + 2);
-        elementList.add(firstElementIndex + 3);
-
+        addQuadShapeElements(elementList, firstElementIndex, 0);
 
         return elementList;
     }
+    public List<Float> rayVertexList(RayCaster rayCaster, Player player) {
 
+        List<Float> vertexList = new ArrayList<>();
+        float width = 0.2f;
+        float zoom = mapZoom;
 
-    public void addRectangleToVertexList(List<Float> vertexList, float x, float y, float zoom, float width, float r, float g, float b, float a) {
+        for (Ray ray : rayCaster.rays) {
+            if (ray.intersectedAnything) {
+                float rayX = ray.firstIntersection.x;
+                float rayY = ray.firstIntersection.y;
 
-        vertexList.add(x * zoom - width);              // x
-        vertexList.add(y * zoom + width);              // y
-        vertexList.add(0.0f);                          // z
-        vertexList.add(r);                          // r
-        vertexList.add(g);                          // g
-        vertexList.add(b);                          // b
-        vertexList.add(a);                          // a
-
-        vertexList.add(x * zoom + width);              // x
-        vertexList.add(y * zoom + width);              // y
-        vertexList.add(0.0f);                          // z
-        vertexList.add(r);                          // r
-        vertexList.add(g);                          // g
-        vertexList.add(b);                          // b
-        vertexList.add(a);                          // a
-
-        vertexList.add(x * zoom - width);              // x
-        vertexList.add(y * zoom - width);              // y
-        vertexList.add(0.0f);                          // z
-        vertexList.add(r);                          // r
-        vertexList.add(g);                          // g
-        vertexList.add(b);                          // b
-        vertexList.add(a);                          // a
-
-        vertexList.add(x * zoom + width);              // x
-        vertexList.add(y * zoom - width);              // y
-        vertexList.add(0.0f);                          // z
-        vertexList.add(r);                          // r
-        vertexList.add(g);                          // g
-        vertexList.add(b);                          // b
-        vertexList.add(a);                          // a
+                addSquareVertexes(vertexList, player.posX, player.posY, 0.0f, zoom, width, 0.4f, 0.4f, 0.0f, 1.0f);
+                addSquareVertexes(vertexList, rayX, rayY, 0.0f, zoom, width,0.4f, 0.4f, 0.0f, 1.0f);
+            }
+        }
+        return vertexList;
+    }
+    public List<Integer> rayElementList(int rayVertexListLength, int firstElementIndex) {
+        List<Integer> elementList = new ArrayList<>();
+        for (int i = 0; i < (rayVertexListLength / (vertexVariables * 8)); i++) {
+            addQuadBeamElements(elementList, firstElementIndex, i);
+        }
+        return elementList;
     }
 }
