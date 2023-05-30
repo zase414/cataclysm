@@ -4,7 +4,6 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
-import util.CollisionBox;
 import util.Ray;
 import util.Time;
 
@@ -16,6 +15,7 @@ import java.util.List;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
+import static render.RayCaster.divideRays;
 
 public class MainScene extends Scene{
     public float[] vertexArray = {1.0f};
@@ -97,7 +97,22 @@ public class MainScene extends Scene{
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        rayCaster.rayCount = Math.max(rayCaster.rayCount + (int) MouseListener.getScrollY(), 5);
+        handleInputEvents();
+
+        player.updateViewAngle();
+        player.updatePlayerMovementVector(dt);
+        player.updatePlayerPos(map);
+
+        rayCaster.cast(player, map);
+        rayCaster.updateMapVisibility();
+
+        buildGraphicsArrays();
+
+        sendGPUDataAndUnbind();
+
+        MouseListener.endFrame();
+    }
+    private void handleInputEvents() {
         System.out.println("Number of rays: " + rayCaster.rayCount);
         try {
             if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
@@ -115,162 +130,99 @@ public class MainScene extends Scene{
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            rayCaster.adjustRayCount();
+        }
+    }
+    private void buildGraphicsArrays() {
+        List<Float> vertexList = new ArrayList<>();
+        List<Integer> elementList = new ArrayList<>();
+
+        // create ground related vertex and element lists, add them to the final list
+        List<Float> groundVertexList = groundVertexList(map);
+        List<Integer> groundElementList = groundElementList(getHighestIndex(elementList));
+
+        vertexList.addAll(groundVertexList);
+        elementList.addAll(groundElementList);
+
+        // create sky related vertex and element lists, add them to the final list
+        List<Float> skyVertexList = skyVertexList(map);
+        List<Integer> skyElementList = skyElementList(getHighestIndex(elementList) + 1);
+
+        vertexList.addAll(skyVertexList);
+        elementList.addAll(skyElementList);
+
+        // create wall related vertex and element lists, add them to the final list
+        List<Float> wallVertexList = wallVertexList(rayCaster);
+        List<Integer> wallElementList = wallElementList(wallVertexList.size(), getHighestIndex(elementList) + 1);
+
+        vertexList.addAll(wallVertexList);
+        elementList.addAll(wallElementList);
+
+        vertexArray = new float[vertexList.size()];
+        for (int i = 0; i < vertexList.size(); i++) {
+            vertexArray[i] = vertexList.get(i);
         }
 
-        {
-            if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
-                // player view angle change
-                player.viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
-                //System.out.println(player.viewAngle);
-            }
-
-            // vector of movement
-            double playerDX = 0.0;
-            double playerDY = 0.0;
-            double strafeMultiplier = 1.0;
-            boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
-            double movementMultipliers = player.speed * dt * strafeMultiplier;
-
-            if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
-            }
-            if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
-                playerDX -= movementMultipliers * Math.sin(Math.toRadians(player.viewAngle));
-                playerDY -= movementMultipliers * Math.cos(Math.toRadians(player.viewAngle));
-            }
-            if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle - 90));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle - 90));
-            }
-            if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
-                playerDX += movementMultipliers * Math.sin(Math.toRadians(player.viewAngle + 90));
-                playerDY += movementMultipliers * Math.cos(Math.toRadians(player.viewAngle + 90));
-            }
-
-            if (playerIsStrafing) {
-                playerDX *= Math.sqrt(2) / 2;
-                playerDY *= Math.sqrt(2) / 2;
-            }
-
-            player.posX += playerDX;
-            // update coordinates of the collision box
-            player.updateCollisionBox();
-            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
-                //System.out.println("clipping into a wall");
-                player.posX -= playerDX;
-            }
-            player.posY += playerDY;
-            // update coordinates of the collision box
-            player.updateCollisionBox();
-            if (CollisionBox.checkForCollisionsPlayer(map, player)) {
-                //System.out.println("clipping into a wall");
-                player.posY -= playerDY;
-            }
-            // update coordinates of the collision box
-            player.updateCollisionBox();
-
-            // ==== debug ==== show speed
-            //System.out.println(Math.sqrt(playerDX * playerDX + playerDY  * playerDY));
-
-        } // player movement
-
-        {
-            // update the rayCaster == update distances to walls
-            rayCaster.cast(player, map);
-
-            List<Float> vertexList = new ArrayList<>();
-            List<Integer> elementList = new ArrayList<>();
-
-            // create ground related vertex and element lists, add them to the final list
-            List<Float> groundVertexList = groundVertexList(map);
-            List<Integer> groundElementList = groundElementList(getHighestIndex(elementList));
-
-            vertexList.addAll(groundVertexList);
-            elementList.addAll(groundElementList);
-
-            // create sky related vertex and element lists, add them to the final list
-            List<Float> skyVertexList = skyVertexList(map);
-            List<Integer> skyElementList = skyElementList(getHighestIndex(elementList) + 1);
-
-            vertexList.addAll(skyVertexList);
-            elementList.addAll(skyElementList);
-
-            // create wall related vertex and element lists, add them to the final list
-            List<Float> wallVertexList = wallVertexList(rayCaster);
-            List<Integer> wallElementList = wallElementList(wallVertexList.size(), getHighestIndex(elementList) + 1);
-
-            vertexList.addAll(wallVertexList);
-            elementList.addAll(wallElementList);
-
-            vertexArray = new float[vertexList.size()];
-            for (int i = 0; i < vertexList.size(); i++) {
-                vertexArray[i] = vertexList.get(i);
-            }
-
-            elementArray = new int[elementList.size()];
-            for (int i = 0; i < elementList.size(); i++) {
-                elementArray[i] = elementList.get(i);
-            }
-
-        } // vertex and element array build
-
-        {
-            // use the shader and upload values
-            defaultShader.use();
-            defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
-            defaultShader.uploadMat4f("uView", camera.getViewMatrix());
-            defaultShader.uploadFloat("uTime", Time.getTime());
-
-            // ---------------------------------
-            // generate VAO, VBO, EBO and send them to GPU
-            // ---------------------------------
-
-            glBindVertexArray(vaoID);
-
-            // create a float buffer of vertices
-            FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
-            vertexBuffer.put(vertexArray).flip(); // '.flip()' makes OpenGL understand it correctly or something
-
-            // create VBO upload vertex buffer
-            glBindBuffer(GL_ARRAY_BUFFER, vboID);
-            glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW);
-
-            // create the indices and upload
-            IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
-            elementBuffer.put(elementArray).flip();
-
-            // create EBO upload element buffer
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
-
-            // add vertex attribute pointers
-            int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
-
-            // position attributes
-            glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
-            glEnableVertexAttribArray(0);
-
-            // color attributes
-            glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
-            glEnableVertexAttribArray(1);
-
-            // draw
-            glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
-
-            vertexArray = null;
-            elementArray = null;
-
-            // unbind everything
-            glDisableVertexAttribArray(0);
-            glDisableVertexAttribArray(1);
-            glBindVertexArray(0);
-            defaultShader.detach();
-
-        } // graphics
-        MouseListener.endFrame();
+        elementArray = new int[elementList.size()];
+        for (int i = 0; i < elementList.size(); i++) {
+            elementArray[i] = elementList.get(i);
+        }
     }
+    private void sendGPUDataAndUnbind() {
+        // use the shader and upload values
+        defaultShader.use();
+        defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+        defaultShader.uploadMat4f("uView", camera.getViewMatrix());
+        defaultShader.uploadFloat("uTime", Time.getTime());
 
+        // ---------------------------------
+        // generate VAO, VBO, EBO and send them to GPU
+        // ---------------------------------
+
+        glBindVertexArray(vaoID);
+
+        // create a float buffer of vertices
+        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
+        vertexBuffer.put(vertexArray).flip(); // '.flip()' makes OpenGL understand it correctly or something
+
+        // create VBO upload vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW);
+
+        // create the indices and upload
+        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
+        elementBuffer.put(elementArray).flip();
+
+        // create EBO upload element buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
+
+        // add vertex attribute pointers
+        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+
+        // position attributes
+        glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
+        glEnableVertexAttribArray(0);
+
+        // color attributes
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
+        glEnableVertexAttribArray(1);
+
+        // draw
+        glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
+
+        vertexArray = null;
+        elementArray = null;
+
+        // unbind everything
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glBindVertexArray(0);
+        defaultShader.detach();
+    }
+    // =======================
+    // LISTS OF VERTEXES AND ELEMENTS
+    // =======================
     public List<Float> wallVertexList(RayCaster rayCaster) {
 
         List<Float> vertexList = new ArrayList<>();
@@ -307,7 +259,6 @@ public class MainScene extends Scene{
         }
        return wallElementList;
     }
-
     public List<Float> skyVertexList(Map map) {
         List<Float> skyVertexList = new ArrayList<>();
         float y = Window.get().height / 2.0f;
@@ -321,7 +272,6 @@ public class MainScene extends Scene{
         addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom right
         return skyVertexList;
     }
-
     public List<Integer> skyElementList(int firstElementIndex) {
         List<Integer> skyElementList = new ArrayList<>();
         addQuadShapeElements(skyElementList, firstElementIndex, 0);
@@ -345,6 +295,4 @@ public class MainScene extends Scene{
         addQuadShapeElements(groundElementList, firstElementIndex, 0);
         return groundElementList;
     }
-
-
 }
