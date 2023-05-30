@@ -7,4 +7,5 @@ public class Wall extends Line {
         super(x1, y1, x2, y2);
     }
     public Wall() {}
+    public float minVisibleT = 2.0f, maxVisibleT = -2.0f;
 }
