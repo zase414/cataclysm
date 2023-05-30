@@ -38,26 +38,6 @@ public abstract class Scene {
             }
         }
     }
-    public static List<List<Ray>> divideRays(List<Ray> rays) {
-        // divides rays into sublists based on the wall they intersected
-        // i.e. example wall ids: 111 222 11 22 333
-        List<List<Ray>> sublists = new ArrayList<>();
-        List<Ray> currentSublist = new ArrayList<>();
-        int currentID = -1;
-        for (Ray ray : rays) {
-            int wallID = ray.intersectedWall.id;
-            if (!ray.intersectedAnything) {
-                continue;
-            }
-            if (wallID != currentID) {
-                currentSublist = new ArrayList<>();
-                sublists.add(currentSublist);
-            }
-            currentSublist.add(ray);
-            currentID = wallID;
-        }
-        return sublists;
-    }
     public static void addQuadShapeElements(List<Integer> elementList, int firstElementIndex, int i) {
         /*
                 0----1
