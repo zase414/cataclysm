@@ -2,7 +2,7 @@ package util;
 
 import org.joml.Vector2f;
 
-abstract class Line {
+public abstract class Line {
     public float x1, y1, x2, y2, dx, dy;
     static float tMin = 0, tMax = 1;
 
@@ -15,6 +15,7 @@ abstract class Line {
 
     public Line() {}
 
+    // SHOWS T ON THE FIRST GIVEN LINE !!!!!
     public static float getIntersectionT(Line line1, Line line2) {
         line1.dx = line1.x2 - line1.x1;
         line1.dy = line1.y2 - line1.y1;
@@ -44,5 +45,9 @@ abstract class Line {
 
         // the t is not "out of bounds"
         return t >= tMin && t <= tMax && t2 >= tMin && t2 <= tMax;
+    }
+
+    public Vector2f coordinatesFromT(float t) {
+        return new Vector2f(x1+t*dx,y1+t*dy);
     }
 }
