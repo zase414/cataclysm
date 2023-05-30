@@ -15,7 +15,6 @@ public class Player {
     public float speed = 10.0f;
     public CollisionBox collisionBox = new CollisionBox();
     public Vector2d movementVector = new Vector2d(0.0, 0.0);
-
     public Player (Map map) {
         this.posX = map.spawnPoint.x;
         this.posY = map.spawnPoint.y;
@@ -33,7 +32,7 @@ public class Player {
         bounds[2] = new Ray(br.x, br.y, bl.x, bl.y);
         bounds[3] = new Ray(bl.x, bl.y, tl.x, tl.y);
     }
-    public void updatePlayerMovementVector(float dt) {
+    public void handlePlayerMovement(float dt, Map map) {
         Vector2d dPos = new Vector2d(0.0, 0.0);
         double strafeMultiplier = 1.0;
         boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
@@ -60,29 +59,25 @@ public class Player {
             dPos.x *= Math.sqrt(2) / 2;
             dPos.y *= Math.sqrt(2) / 2;
         }
-        movementVector = dPos;
-    }
-    public void updatePlayerPos(Map map) {
-        // vector of movement
-        Vector2d dPos = movementVector;
 
         posX += dPos.x;
-
         // update X coordinate of the collision box
         updateCollisionBox();
         if (CollisionBox.checkForCollisionsPlayer(map, this)) {
             posX -= dPos.x;
+            dPos.x = 0.0f;
         }
 
         posY += dPos.y;
-
         // update Y coordinate of the collision box
         updateCollisionBox();
         if (CollisionBox.checkForCollisionsPlayer(map, this)) {
             posY -= dPos.y;
+            dPos.y = 0;
         }
 
         updateCollisionBox();
+        movementVector = dPos;
     }
     public void updateViewAngle() {
         if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {

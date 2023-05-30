@@ -100,8 +100,7 @@ public class MainScene extends Scene{
         handleInputEvents();
 
         player.updateViewAngle();
-        player.updatePlayerMovementVector(dt);
-        player.updatePlayerPos(map);
+        player.handlePlayerMovement(dt, map);
 
         rayCaster.cast(player, map);
         rayCaster.updateMapVisibility();

@@ -71,10 +71,10 @@ public class Map {
 
                 Wall wall = new Wall(x1, y1, x2, y2);
 
-                wall.r = wallObj.get("r").getAsFloat();
-                wall.g = wallObj.get("g").getAsFloat();
-                wall.b = wallObj.get("b").getAsFloat();
-                wall.a = wallObj.get("a").getAsFloat();
+                wall.color.r = wallObj.get("r").getAsFloat();
+                wall.color.g = wallObj.get("g").getAsFloat();
+                wall.color.b = wallObj.get("b").getAsFloat();
+                wall.color.a = wallObj.get("a").getAsFloat();
 
                 // ==== debug ====
                 //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");

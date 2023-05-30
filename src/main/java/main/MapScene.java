@@ -99,8 +99,7 @@ public class MapScene extends Scene{
         handleInputEvents();
 
         player.updateViewAngle();
-        player.updatePlayerMovementVector(dt);
-        player.updatePlayerPos(map);
+        player.handlePlayerMovement(dt, map);
 
         rayCaster.cast(player, map);
         rayCaster.updateMapVisibility();
@@ -264,8 +263,8 @@ public class MapScene extends Scene{
 
         if (Settings.mapAlwaysVisible) {
             for (Wall wall:map.walls) {
-                addSquareVertexes(vertexList, wall.x1, wall.y1, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
-                addSquareVertexes(vertexList, wall.x2, wall.y2, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
+                addSquareVertexes(vertexList, wall.x1, wall.y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertexes(vertexList, wall.x2, wall.y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
             }
         } else {
             for (Wall wall:map.walls) {
@@ -277,8 +276,8 @@ public class MapScene extends Scene{
                     x2 = wall.coordinatesFromT(wall.maxVisibleT).x;
                     y2 = wall.coordinatesFromT(wall.maxVisibleT).y;
                 } else continue;
-                addSquareVertexes(vertexList, x1, y1, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
-                addSquareVertexes(vertexList, x2, y2, 1.0f, zoom, width, wall.r, wall.g, wall.b, wall.a);
+                addSquareVertexes(vertexList, x1, y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertexes(vertexList, x2, y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
             }
         }
         return vertexList;
