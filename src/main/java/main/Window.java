@@ -87,9 +87,11 @@ public class Window {
 
         // GLFW config
         glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_FOCUSED, 1);
         glfwWindowHint(GLFW_VISIBLE, 0);
         glfwWindowHint(GLFW_RESIZABLE, 1);
         glfwWindowHint(GLFW_MAXIMIZED, 0);
+        glfwWindowHint(GLFW_DECORATED, 1);
 
         // window id creation
         glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
@@ -120,6 +122,11 @@ public class Window {
         Window.changeScene(0);
     }
     public void loop() {
+
+        int[] width = new int[1], height = new int[1];
+        glfwGetWindowSize(glfwWindow, width, height);
+        this.height = height[0];
+        this.width = width[0];
 
         float beginTime = Time.getTime();
         float endTime;
