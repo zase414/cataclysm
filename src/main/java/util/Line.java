@@ -11,16 +11,14 @@ public abstract class Line {
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this.dx = x2 - x1;
+        this.dy = y2 - y1;
     }
 
     public Line() {}
 
     // SHOWS T ON THE FIRST GIVEN LINE !!!!!
     public static float getIntersectionT(Line line1, Line line2) {
-        line1.dx = line1.x2 - line1.x1;
-        line1.dy = line1.y2 - line1.y1;
-        line2.dx = line2.x2 - line2.x1;
-        line2.dy = line2.y2 - line2.y1;
         return ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
     }
 

@@ -110,15 +110,15 @@ public class MapScene extends Scene{
 
         MouseListener.endFrame();
     }
+    float[] wallDrawCoords = new float[4];
     private void handleInputEvents() {
-
         // scene switch, TAB related stuff
         try {
             if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                keyWasPressed.replace(GLFW_KEY_TAB, true);
-            } else if (keyWasPressed.get(GLFW_KEY_TAB)) {
+                heldKeys.replace(GLFW_KEY_TAB, true);
+            } else if (heldKeys.get(GLFW_KEY_TAB)) {
                 Window.changeScene(1);
-                keyWasPressed.replace(GLFW_KEY_TAB, false);
+                heldKeys.replace(GLFW_KEY_TAB, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,6 +127,7 @@ public class MapScene extends Scene{
 
         // mouse cursor state & ALT-related stuff
         if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+            drawWalls();
             // show mouse cursor
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             cameraMouseControl();
@@ -155,6 +156,22 @@ public class MapScene extends Scene{
             camera.position.x += dPos.x * mapZoom;
             camera.position.y += dPos.y * mapZoom;
         }
+    private void drawWalls() {
+        if (!heldKeys.get(GLFW_MOUSE_BUTTON_2) && MouseListener.mouseButtonDown(1)) {
+            wallDrawCoords[0] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
+            wallDrawCoords[1] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
+            heldKeys.replace(GLFW_MOUSE_BUTTON_2, true);
+        } else if (heldKeys.get(GLFW_MOUSE_BUTTON_2) && !MouseListener.mouseButtonDown(1)) {
+            wallDrawCoords[2] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
+            wallDrawCoords[3] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
+            Wall newWall = new Wall(wallDrawCoords[0], wallDrawCoords[1], wallDrawCoords[2], wallDrawCoords[3]);
+            newWall.color = new Color(1.0f,1.0f,1.0f,1.0f);
+            newWall.id = map.lastWallID + 1;
+            map.lastWallID++;
+            map.walls.add(newWall);
+            heldKeys.replace(GLFW_MOUSE_BUTTON_2, false);
+        }
+    }
     private void buildGraphicsArrays() {
         List<Float> vertexList = new ArrayList<>();
         List<Integer> elementList = new ArrayList<>();
@@ -268,7 +285,7 @@ public class MapScene extends Scene{
             }
         } else {
             for (Wall wall:map.walls) {
-                System.out.println("min: " + wall.minVisibleT + " max: " + wall.maxVisibleT);
+                //System.out.println("min: " + wall.minVisibleT + " max: " + wall.maxVisibleT);
                 float x1, x2, y1, y2;
                 if (wall.minVisibleT != 2 && wall.maxVisibleT != -2) {
                     x1 = wall.coordinatesFromT(wall.minVisibleT).x;

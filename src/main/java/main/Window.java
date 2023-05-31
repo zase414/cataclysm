@@ -13,7 +13,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Window {
     public int width, height;
     public float r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f; // default background color
-    private String title;
+    public String title;
     long glfwWindow;
     public static Scene currentScene = null;
     static Window window = null;
@@ -137,6 +137,8 @@ public class Window {
             if (dt >= 0) {
                 currentScene.update(dt);
             }
+
+            glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
 
             if (KeyListener.isKeyPressed(GLFW_KEY_F1)) {
                 changeScene(0);

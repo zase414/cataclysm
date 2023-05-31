@@ -1,14 +1,14 @@
 package main;
 
-import util.Ray;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2;
+
 public abstract class Scene {
-    static HashMap<Integer, Boolean> keyWasPressed = new HashMap<>();
+    static HashMap<Integer, Boolean> heldKeys = new HashMap<>();
     protected Camera camera;
     int positionsSize = 3;
     int colorSize = 4;
@@ -18,7 +18,8 @@ public abstract class Scene {
 
     }
     public void init() {
-
+        heldKeys.put(GLFW_KEY_TAB, false);
+        heldKeys.put(GLFW_MOUSE_BUTTON_2, false);
     }
     public abstract void update(float dt);
     public int getHighestIndex(List<Integer> elementList) {

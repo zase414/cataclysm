@@ -2,7 +2,6 @@ package main;
 
 import org.joml.Vector2f;
 import util.Color;
-import util.Ray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -19,7 +18,7 @@ public class Map {
     public float spawnViewAngle;
     public Color skyColor = new Color();
     public Color groundColor = new Color();
-
+    public int lastWallID;
     public Map (String filepath) {
         this.filepath = filepath;
     }
@@ -79,6 +78,7 @@ public class Map {
                 // ==== debug ====
                 //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
                 wall.id = id;
+                lastWallID = id;
                 walls.add(wall);
                 id++;
             }

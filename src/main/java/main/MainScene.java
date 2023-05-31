@@ -35,7 +35,6 @@ public class MainScene extends Scene{
     }
     @Override
     public void init() {
-        keyWasPressed.put(GLFW_KEY_TAB, false);
 
         // initialize the map
         map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
@@ -94,7 +93,6 @@ public class MainScene extends Scene{
     }
     @Override
     public void update(float dt) {
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         handleInputEvents();
@@ -115,10 +113,10 @@ public class MainScene extends Scene{
         System.out.println("Number of rays: " + rayCaster.rayCount);
         try {
             if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                keyWasPressed.replace(GLFW_KEY_TAB, true);
-            } else if (keyWasPressed.get(GLFW_KEY_TAB)) {
+                heldKeys.replace(GLFW_KEY_TAB, true);
+            } else if (heldKeys.get(GLFW_KEY_TAB)) {
                 Window.changeScene(2);
-                keyWasPressed.replace(GLFW_KEY_TAB, false);
+                heldKeys.replace(GLFW_KEY_TAB, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
