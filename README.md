@@ -1,5 +1,5 @@
 # cataclysm
-a work-in-progress OpenGL pseudo-3D raycasting game engine written in Java
+a work-in-progress OpenGL pseudo-3D raycasting-based game (engine) written in Java
 
 ## version history
 *coming soon*
