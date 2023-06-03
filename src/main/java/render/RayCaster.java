@@ -16,7 +16,6 @@ public class RayCaster {
     public int rayCount;
     public List<Ray> rays;
 
-
     public RayCaster(float fov, float renderDistance, int rayCount, float fadeOutDistance) {
         this.fadeOutDistance = fadeOutDistance;
         this.renderDistance = renderDistance;
@@ -58,14 +57,11 @@ public class RayCaster {
                     Vector2f intersection = Ray.getIntersection(ray,wall);
                     float intersectionT = Ray.getIntersectionT(wall, ray);
 
-                    // calculate the distance of the intersection to the player
-                    double dx = player.posX - intersection.x;
-                    double dy = player.posY - intersection.y;
-                    double wallDistance = Math.sqrt((dx * dx) + (dy * dy));
+                    float distance = Ray.getIntersectionT(ray, wall) * renderDistance;
 
                     // get the values of the nearest wall
-                    if (wallDistance < minDist) {
-                        minDist = (float) wallDistance;
+                    if (distance < minDist) {
+                        minDist = distance;
                         nearestXWall = wall;
                         nearestXCoordinates = intersection;
                         nearestXT = intersectionT;
@@ -83,7 +79,6 @@ public class RayCaster {
         }
         this.rays = rays;
     }
-
     public void updateMapVisibility() {
         List<List<Ray>> chainList = divideRays(rays);
 
