@@ -318,10 +318,10 @@ public class MapScene extends Scene{
             Ray startRay = sameWallRays.get(0);
             Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
 
-            float startX = startRay.firstIntersection.x;
-            float startY = startRay.firstIntersection.y;
-            float endX = endRay.firstIntersection.x;
-            float endY = endRay.firstIntersection.y;
+            float startX = startRay.intersections.get(0).x;
+            float startY = startRay.intersections.get(0).y;
+            float endX = endRay.intersections.get(0).x;
+            float endY = endRay.intersections.get(0).y;
 
             addSquareVertexes(vertexList, startX, startY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
             addSquareVertexes(vertexList, endX, endY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
@@ -359,9 +359,9 @@ public class MapScene extends Scene{
         float zoom = mapZoom;
 
         for (Ray ray : rayCaster.rays) {
-            if (ray.intersectedAnything) {
-                float rayX = ray.firstIntersection.x;
-                float rayY = ray.firstIntersection.y;
+            if (ray.intersectedAnything.get(0)) {
+                float rayX = ray.intersections.get(0).x;
+                float rayY = ray.intersections.get(0).y;
 
                 addSquareVertexes(vertexList, player.posX, player.posY, 0.0f, zoom, width, 0.4f, 0.4f, 0.0f, 1.0f);
                 addSquareVertexes(vertexList, rayX, rayY, 0.0f, zoom, width,0.4f, 0.4f, 0.0f, 1.0f);

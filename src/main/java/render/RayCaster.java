@@ -6,8 +6,10 @@ import java.util.List;
 import main.Map;
 import main.MouseListener;
 import main.Player;
-import org.joml.Vector2f;
 import util.*;
+
+import static util.Line.getIntersection;
+import static util.Line.getIntersectionT;
 
 public class RayCaster {
     public float renderDistance;
@@ -46,35 +48,22 @@ public class RayCaster {
             rays.add(ray);
         }
         for (Ray ray:rays) {
-            float minDist = renderDistance + 1;
-            Wall nearestXWall = new Wall();
-            Vector2f nearestXCoordinates = new Vector2f();
-            float nearestXT = 0;
             for (Wall wall: map.walls) {
                 if (Ray.areIntersecting(ray,wall)) {
-                    ray.intersectedAnything = true;
-
-                    Vector2f intersection = Ray.getIntersection(ray,wall);
-                    float intersectionT = Ray.getIntersectionT(wall, ray);
-
-                    float distance = Ray.getIntersectionT(ray, wall) * renderDistance;
-
-                    // get the values of the nearest wall
-                    if (distance < minDist) {
-                        minDist = distance;
-                        nearestXWall = wall;
-                        nearestXCoordinates = intersection;
-                        nearestXT = intersectionT;
-                    }
+                    ray.intersectedWalls.add(wall);
                 }
             }
-            if (ray.intersectedAnything) {
-                ray.distanceToWall = minDist;
-                Color color = nearestXWall.color;
-                ray.color = color.shade(minDist);
-                ray.firstIntersection = nearestXCoordinates;
-                ray.intersectedWall = nearestXWall;
-                ray.intersectionT = nearestXT;
+            ray.intersectedWalls.sort((wall1, wall2) -> {
+                Float intersectionRelDistanceOnRay1 = getIntersectionT(ray, wall1);
+                Float intersectionRelDistanceOnRay2 = getIntersectionT(ray, wall2);
+                return intersectionRelDistanceOnRay1.compareTo(intersectionRelDistanceOnRay2);
+            });
+            for (Wall w : ray.intersectedWalls) {
+                ray.intersectedAnything.add(true);
+                ray.intersectionRelDistanceOnRay.add(getIntersectionT(ray, w));
+                ray.intersectionRelDistanceOnWall.add(getIntersectionT(w, ray));
+                ray.colors.add(w.color);
+                ray.intersections.add(getIntersection(w, ray));
             }
         }
         this.rays = rays;
@@ -85,16 +74,14 @@ public class RayCaster {
         for (List<Ray> sameWallRays : chainList) {
             Ray startRay = sameWallRays.get(0);
             Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
-            float minT = Math.min(startRay.intersectionT, endRay.intersectionT);
-            float maxT = Math.max(startRay.intersectionT, endRay.intersectionT);
-            if (minT < 0.001f) minT = 0.0f;
-            if (maxT > 0.999f) maxT = 1.0f;
+            float minT = Math.min(startRay.intersectionRelDistanceOnWall.get(0), endRay.intersectionRelDistanceOnWall.get(0));
+            float maxT = Math.max(startRay.intersectionRelDistanceOnWall.get(0), endRay.intersectionRelDistanceOnWall.get(0));
 
-            if (minT < startRay.intersectedWall.minVisibleT) {
-                startRay.intersectedWall.minVisibleT = minT;
+            if (minT < startRay.intersectedWalls.get(0).minVisibleT) {
+                startRay.intersectedWalls.get(0).minVisibleT = minT;
             }
-            if (maxT > startRay.intersectedWall.maxVisibleT) {
-                startRay.intersectedWall.maxVisibleT = maxT;
+            if (maxT > startRay.intersectedWalls.get(0).maxVisibleT) {
+                startRay.intersectedWalls.get(0).maxVisibleT = maxT;
             }
         }
     }
@@ -106,10 +93,10 @@ public class RayCaster {
         List<Ray> currentSublist = new ArrayList<>();
         int currentID = -1;
         for (Ray ray : rays) {
-            int wallID = ray.intersectedWall.id;
-            if (!ray.intersectedAnything) {
+            if (!ray.intersectedAnything.get(0)) {
                 continue;
             }
+            int wallID = ray.intersectedWalls.get(0).id;
             if (wallID != currentID) {
                 currentSublist = new ArrayList<>();
                 sublists.add(currentSublist);
