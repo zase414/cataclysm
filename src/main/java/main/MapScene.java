@@ -309,8 +309,9 @@ public class MapScene extends Scene{
         return elementList;
     }
     public List<Float> intersectionVertexList(RayCaster rayCaster) {
+        int depth = 1;
         List<Float> vertexList = new ArrayList<>();
-        List<List<Ray>> chainList = divideRays(rayCaster.rays);
+        List<List<Ray>> chainList = divideRays(rayCaster.rays, 1);
         float width = 1.0f;
         float zoom = mapZoom;
 
@@ -318,10 +319,10 @@ public class MapScene extends Scene{
             Ray startRay = sameWallRays.get(0);
             Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
 
-            float startX = startRay.intersections.get(0).x;
-            float startY = startRay.intersections.get(0).y;
-            float endX = endRay.intersections.get(0).x;
-            float endY = endRay.intersections.get(0).y;
+            float startX = startRay.intersections.get(depth).x;
+            float startY = startRay.intersections.get(depth).y;
+            float endX = endRay.intersections.get(depth).x;
+            float endY = endRay.intersections.get(depth).y;
 
             addSquareVertexes(vertexList, startX, startY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
             addSquareVertexes(vertexList, endX, endY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);

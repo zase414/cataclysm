@@ -15,10 +15,9 @@ public class Color {
     }
 
     public Color shade(float distance) {
-        Color shadedColor = new Color();
-        shadedColor.r = Math.max(Math.min(r - r * (distance / fadeOutDistance), r), r / 100.0f);
-        shadedColor.g = Math.max(Math.min(g - g * (distance / fadeOutDistance), g), g / 100.0f);
-        shadedColor.b = Math.max(Math.min(b - b * (distance / fadeOutDistance), b), b / 100.0f);
-        return shadedColor;
+        float r = Math.max(Math.min(this.r - this.r * (distance / fadeOutDistance), this.r), this.r / 100.0f);
+        float g = Math.max(Math.min(this.g - this.g * (distance / fadeOutDistance), this.g), this.g / 100.0f);
+        float b = Math.max(Math.min(this.b - this.b * (distance / fadeOutDistance), this.b), this.b / 100.0f);
+        return new Color(r, g, b, this.a);
     }
 }

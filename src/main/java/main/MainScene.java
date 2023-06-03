@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import util.Color;
 import util.Ray;
 import util.Time;
 
@@ -221,15 +222,16 @@ public class MainScene extends Scene{
     // LISTS OF VERTEXES AND ELEMENTS
     // =======================
     public List<Float> wallVertexList(RayCaster rayCaster) {
-
+        int depth = 1;
         List<Float> vertexList = new ArrayList<>();
-        List<List<Ray>> chainList = divideRays(rayCaster.rays);
+        List<List<Ray>> chainList = divideRays(rayCaster.rays, depth);
 
         for (List<Ray> rayList : chainList) {
             Ray startRay = rayList.get(0);
             Ray endRay = rayList.get(rayList.size()-1);
-            float startDistance = startRay.intersectionRelDistanceOnRay.get(0) * rayCaster.renderDistance;
-            float endDistance = endRay.intersectionRelDistanceOnRay.get(0) * rayCaster.renderDistance;
+            float startDistance = startRay.intersectionRelDistanceOnRay.get(depth) * rayCaster.renderDistance;
+            float endDistance = endRay.intersectionRelDistanceOnRay.get(depth) * rayCaster.renderDistance;
+
             int i = startRay.id;
             int di = endRay.id - startRay.id + 1;
 
@@ -238,8 +240,12 @@ public class MainScene extends Scene{
             float ye = (float) (Window.get().height) / (endDistance);
             float xl = (float) i * screenPortion - Window.get().width / 2.0f;
             float xr = (i + di) * screenPortion - Window.get().width / 2.0f;
-            float rs = startRay.colors.get(0).r, gs = startRay.colors.get(0).g, bs = startRay.colors.get(0).b, as = startRay.colors.get(0).a;
-            float re = endRay.colors.get(0).r, ge = endRay.colors.get(0).g, be = endRay.colors.get(0).b, ae = endRay.colors.get(0).a;
+
+            Color startColor = startRay.colors.get(depth).shade(startDistance);
+            Color endColor = endRay.colors.get(depth).shade(endDistance);
+
+            float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
+            float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
 
             addVertex(vertexList, xl, ys, 1/startDistance, rs, gs, bs, as);
             addVertex(vertexList, xr, ye, 1/endDistance, re, ge, be, ae);

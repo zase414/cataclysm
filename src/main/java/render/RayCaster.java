@@ -17,7 +17,7 @@ public class RayCaster {
     public float fov;
     public int rayCount;
     public List<Ray> rays;
-
+    public int renderDepth = 10;
     public RayCaster(float fov, float renderDistance, int rayCount, float fadeOutDistance) {
         this.fadeOutDistance = fadeOutDistance;
         this.renderDistance = renderDistance;
@@ -65,38 +65,42 @@ public class RayCaster {
                 ray.colors.add(w.color);
                 ray.intersections.add(getIntersection(w, ray));
             }
+            for (int i = 0; i < renderDepth - ray.intersectedWalls.size(); i++) {
+                ray.intersectedAnything.add(false);
+            }
         }
         this.rays = rays;
     }
     public void updateMapVisibility() {
-        List<List<Ray>> chainList = divideRays(rays);
+        int depth = 1;
+        List<List<Ray>> chainList = divideRays(rays, depth);
 
         for (List<Ray> sameWallRays : chainList) {
             Ray startRay = sameWallRays.get(0);
             Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
-            float minT = Math.min(startRay.intersectionRelDistanceOnWall.get(0), endRay.intersectionRelDistanceOnWall.get(0));
-            float maxT = Math.max(startRay.intersectionRelDistanceOnWall.get(0), endRay.intersectionRelDistanceOnWall.get(0));
+            float minT = Math.min(startRay.intersectionRelDistanceOnWall.get(depth), endRay.intersectionRelDistanceOnWall.get(depth));
+            float maxT = Math.max(startRay.intersectionRelDistanceOnWall.get(depth), endRay.intersectionRelDistanceOnWall.get(depth));
 
-            if (minT < startRay.intersectedWalls.get(0).minVisibleT) {
-                startRay.intersectedWalls.get(0).minVisibleT = minT;
+            if (minT < startRay.intersectedWalls.get(depth).minVisibleT) {
+                startRay.intersectedWalls.get(depth).minVisibleT = minT;
             }
-            if (maxT > startRay.intersectedWalls.get(0).maxVisibleT) {
-                startRay.intersectedWalls.get(0).maxVisibleT = maxT;
+            if (maxT > startRay.intersectedWalls.get(depth).maxVisibleT) {
+                startRay.intersectedWalls.get(depth).maxVisibleT = maxT;
             }
         }
     }
 
-    public static List<List<Ray>> divideRays(List<Ray> rays) {
+    public static List<List<Ray>> divideRays(List<Ray> rays, int depth) {
         // divides rays into sublists based on the wall they intersected
         // i.e. example wall ids: 111 222 11 22 333
         List<List<Ray>> sublists = new ArrayList<>();
         List<Ray> currentSublist = new ArrayList<>();
         int currentID = -1;
         for (Ray ray : rays) {
-            if (!ray.intersectedAnything.get(0)) {
+            if (!ray.intersectedAnything.get(depth)) {
                 continue;
             }
-            int wallID = ray.intersectedWalls.get(0).id;
+            int wallID = ray.intersectedWalls.get(depth).id;
             if (wallID != currentID) {
                 currentSublist = new ArrayList<>();
                 sublists.add(currentSublist);
