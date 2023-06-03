@@ -115,10 +115,10 @@ public class MapScene extends Scene{
         // scene switch, TAB related stuff
         try {
             if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                heldKeys.replace(GLFW_KEY_TAB, true);
-            } else if (heldKeys.get(GLFW_KEY_TAB)) {
+                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, true);
+            } else if (KeyListener.get().heldKeys.get(GLFW_KEY_TAB)) {
                 Window.changeScene(1);
-                heldKeys.replace(GLFW_KEY_TAB, false);
+                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,29 +139,29 @@ public class MapScene extends Scene{
             }
         }
     }
-        private void cameraMouseControl() {
-            float scrollSensitivity = 0.1f;
-            // map camera moving and zooming
-            mapZoom = Math.min(Math.max(MouseListener.getScrollY() + mapZoom, minMapZoom), maxMapZoom);
-            if (MouseListener.getScrollY() > 0) {
-                camera.position.x += (MouseListener.getX() - Window.window.width / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
-                camera.position.y -= (MouseListener.getY() - Window.window.height / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
-            } else {
-                camera.position.x += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.x;
-                camera.position.y += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.y;
-            }
+    private void cameraMouseControl() {
+        float scrollSensitivity = 0.1f;
+        // map camera moving and zooming
+        mapZoom = Math.min(Math.max(MouseListener.getScrollY() + mapZoom, minMapZoom), maxMapZoom);
+        if (MouseListener.getScrollY() > 0) {
+            camera.position.x += (MouseListener.getX() - Window.window.width / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
+            camera.position.y -= (MouseListener.getY() - Window.window.height / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
+        } else {
+            camera.position.x += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.x;
+            camera.position.y += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.y;
         }
-        private void cameraFollowsPlayer() {
-            Vector2d dPos = player.movementVector;
-            camera.position.x += dPos.x * mapZoom;
-            camera.position.y += dPos.y * mapZoom;
-        }
+    }
+    private void cameraFollowsPlayer() {
+        Vector2d dPos = player.movementVector;
+        camera.position.x += dPos.x * mapZoom;
+        camera.position.y += dPos.y * mapZoom;
+    }
     private void drawWalls() {
-        if (!heldKeys.get(GLFW_MOUSE_BUTTON_2) && MouseListener.mouseButtonDown(1)) {
+        if (!MouseListener.get().heldButtons.get(GLFW_MOUSE_BUTTON_2) && MouseListener.mouseButtonDown(1)) {
             wallDrawCoords[0] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
             wallDrawCoords[1] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
-            heldKeys.replace(GLFW_MOUSE_BUTTON_2, true);
-        } else if (heldKeys.get(GLFW_MOUSE_BUTTON_2) && !MouseListener.mouseButtonDown(1)) {
+            MouseListener.get().heldButtons.replace(GLFW_MOUSE_BUTTON_2, true);
+        } else if (MouseListener.get().heldButtons.get(GLFW_MOUSE_BUTTON_2) && !MouseListener.mouseButtonDown(1)) {
             wallDrawCoords[2] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
             wallDrawCoords[3] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
             Wall newWall = new Wall(wallDrawCoords[0], wallDrawCoords[1], wallDrawCoords[2], wallDrawCoords[3]);
@@ -169,7 +169,7 @@ public class MapScene extends Scene{
             newWall.id = map.lastWallID + 1;
             map.lastWallID++;
             map.walls.add(newWall);
-            heldKeys.replace(GLFW_MOUSE_BUTTON_2, false);
+            MouseListener.get().heldButtons.replace(GLFW_MOUSE_BUTTON_2, false);
         }
     }
     private void buildGraphicsArrays() {

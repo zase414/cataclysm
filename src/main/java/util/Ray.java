@@ -3,7 +3,7 @@ package util;
 import org.joml.Vector2f;
 
 public class Ray extends Line {
-    public float r, g, b, a;
+    public Color color;
     public float distanceToWall;
     public Vector2f firstIntersection = new Vector2f();
     public float intersectionT;

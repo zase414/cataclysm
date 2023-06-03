@@ -15,6 +15,5 @@ public class RayCasterTest {
         RayCaster rayCaster = new RayCaster(100, 1000, 100, 300);
         rayCaster.cast(player, map);
         System.out.println("renderDistance: " + rayCaster.renderDistance + ", fov: " + rayCaster.fov + ", rayCount: " + rayCaster.rayCount);
-
     }
 }

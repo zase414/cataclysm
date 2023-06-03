@@ -74,11 +74,8 @@ public class RayCaster {
             }
             if (ray.intersectedAnything) {
                 ray.distanceToWall = minDist;
-                float r = nearestXWall.color.r, g = nearestXWall.color.g, b = nearestXWall.color.b, a = nearestXWall.color.a;
-                ray.r = Math.max(Math.min(r - r * (minDist / fadeOutDistance), r), r / 100.0f);
-                ray.g = Math.max(Math.min(g - g * (minDist / fadeOutDistance), g), g / 100.0f);
-                ray.b = Math.max(Math.min(b - b * (minDist / fadeOutDistance), b), b / 100.0f);
-                ray.a = a;
+                Color color = nearestXWall.color;
+                ray.color = color.shade(minDist);
                 ray.firstIntersection = nearestXCoordinates;
                 ray.intersectedWall = nearestXWall;
                 ray.intersectionT = nearestXT;

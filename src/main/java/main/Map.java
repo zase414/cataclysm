@@ -32,20 +32,20 @@ public class Map {
 
             // extract spawnpoint coordinates
             JsonObject spawnpointObj = jsonObject.getAsJsonObject("spawnpoint");
-            this.spawnPoint.x = spawnpointObj.get("x").getAsFloat();
-            this.spawnPoint.y = spawnpointObj.get("y").getAsFloat();
+            spawnPoint.x = spawnpointObj.get("x").getAsFloat();
+            spawnPoint.y = spawnpointObj.get("y").getAsFloat();
 
             // extract the background colors
             JsonObject skyColorObj = jsonObject.getAsJsonObject("sky_color");
-            this.skyColor.r = skyColorObj.get("r").getAsFloat();
-            this.skyColor.g = skyColorObj.get("g").getAsFloat();
-            this.skyColor.b = skyColorObj.get("b").getAsFloat();
-            this.skyColor.a = skyColorObj.get("a").getAsFloat();
+            skyColor.r = skyColorObj.get("r").getAsFloat();
+            skyColor.g = skyColorObj.get("g").getAsFloat();
+            skyColor.b = skyColorObj.get("b").getAsFloat();
+            skyColor.a = skyColorObj.get("a").getAsFloat();
             JsonObject groundColorObj = jsonObject.getAsJsonObject("ground_color");
-            this.groundColor.r = groundColorObj.get("r").getAsFloat();
-            this.groundColor.g = groundColorObj.get("g").getAsFloat();
-            this.groundColor.b = groundColorObj.get("b").getAsFloat();
-            this.groundColor.a = groundColorObj.get("a").getAsFloat();
+            groundColor.r = groundColorObj.get("r").getAsFloat();
+            groundColor.g = groundColorObj.get("g").getAsFloat();
+            groundColor.b = groundColorObj.get("b").getAsFloat();
+            groundColor.a = groundColorObj.get("a").getAsFloat();
 
 
             // print the spawn coordinates
@@ -70,14 +70,18 @@ public class Map {
 
                 Wall wall = new Wall(x1, y1, x2, y2);
 
-                wall.color.r = wallObj.get("r").getAsFloat();
-                wall.color.g = wallObj.get("g").getAsFloat();
-                wall.color.b = wallObj.get("b").getAsFloat();
-                wall.color.a = wallObj.get("a").getAsFloat();
+
+
+                float r = wallObj.get("r").getAsFloat();
+                float g = wallObj.get("g").getAsFloat();
+                float b = wallObj.get("b").getAsFloat();
+                float a = wallObj.get("a").getAsFloat();
+                wall.color = new Color(r, g, b, a);
 
                 // ==== debug ====
                 //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
                 wall.id = id;
+                wall.height = 1.0f;
                 lastWallID = id;
                 walls.add(wall);
                 id++;

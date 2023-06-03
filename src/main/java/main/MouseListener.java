@@ -1,5 +1,7 @@
 package main;
 
+import java.util.HashMap;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseListener {
@@ -8,7 +10,7 @@ public class MouseListener {
     private double xPos, yPos, lastY, lastX;
     private boolean[] mouseButtonPressed = new boolean[3];
     private boolean isDragging;
-
+    HashMap<Integer, Boolean> heldButtons = new HashMap<>();
     private MouseListener() {
         this.scrollX = 0.0;
         this.scrollY = 0.0;
@@ -17,10 +19,15 @@ public class MouseListener {
         this.lastX = 0.0;
         this.lastY = 0.0;
     }
-
+    public void initHeldButtons() {
+        for (int button : new int[]{GLFW_MOUSE_BUTTON_2}) {
+            heldButtons.put(button, false);
+        }
+    }
     public static MouseListener get() {
         if (MouseListener.instance == null) {
             MouseListener.instance = new MouseListener();
+            instance.initHeldButtons();
         }
         return MouseListener.instance;
     }

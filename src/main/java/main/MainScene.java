@@ -113,10 +113,10 @@ public class MainScene extends Scene{
         System.out.println("Number of rays: " + rayCaster.rayCount);
         try {
             if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                heldKeys.replace(GLFW_KEY_TAB, true);
-            } else if (heldKeys.get(GLFW_KEY_TAB)) {
+                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, true);
+            } else if (KeyListener.get().heldKeys.get(GLFW_KEY_TAB)) {
                 Window.changeScene(2);
-                heldKeys.replace(GLFW_KEY_TAB, false);
+                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -238,8 +238,8 @@ public class MainScene extends Scene{
             float ye = (float) (Window.get().height) / (endDistance);
             float xl = (float) i * screenPortion - Window.get().width / 2.0f;
             float xr = (i + di) * screenPortion - Window.get().width / 2.0f;
-            float rs = startRay.r, gs = startRay.g, bs = startRay.b, as = startRay.a;
-            float re = endRay.r, ge = endRay.g, be = endRay.b, ae = endRay.a;
+            float rs = startRay.color.r, gs = startRay.color.g, bs = startRay.color.b, as = startRay.color.a;
+            float re = endRay.color.r, ge = endRay.color.g, be = endRay.color.b, ae = endRay.color.a;
 
             addVertex(vertexList, xl, ys, 1/startDistance, rs, gs, bs, as);
             addVertex(vertexList, xr, ye, 1/endDistance, re, ge, be, ae);
@@ -254,7 +254,7 @@ public class MainScene extends Scene{
         for (int i = 0; i < (wallVertexListLength / (vertexVariables * 4)); i++) {
             addQuadShapeElements(wallElementList, firstElementIndex, i);
         }
-       return wallElementList;
+        return wallElementList;
     }
     public List<Float> skyVertexList(Map map) {
         List<Float> skyVertexList = new ArrayList<>();
