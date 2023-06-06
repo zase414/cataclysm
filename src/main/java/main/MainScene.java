@@ -230,7 +230,7 @@ public class MainScene extends Scene{
             for (List<Ray> rayList : chainList) {
                 Ray startRay = rayList.get(0);
                 Ray endRay = rayList.get(rayList.size()-1);
-                float startDistance = startRay.intersectionDistanceOnRay.get(depth); // TODO fix the clipping
+                float startDistance = startRay.intersectionDistanceOnRay.get(depth);
                 float endDistance = endRay.intersectionDistanceOnRay.get(depth);
 
                 int i = startRay.id;
