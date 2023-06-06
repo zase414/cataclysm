@@ -24,29 +24,75 @@ public class RayCaster {
         this.rayCount = rayCount;
         this.fov = fov;
     }
-    public void cast(Player player, Map map) {
 
+    public List<Ray> createRays(Player player) {
+        float offset = 1.0f;
         List<Ray> rays = new ArrayList<>();
+        // degrees -> radians
+        double rad = Math.toRadians(player.viewAngle);
+        // calculate vector to the center
+        /*
 
-        float dAngle = fov / (rayCount - 1);
-        //System.out.println("angle step = " + dAngle);
-        float startAngle = player.viewAngle - fov / 2;
-        //System.out.println("start angle = " + startAngle);
+            O  edge1
+                *
+                    *
+                        *1
+            centerDX        *
+       -------------------------*centerPoint
+                            *   |  *
+                        *       |     *
+             offset *           |        *
+                *               |          1*
+            *                  centerDY        *
+        O player                |                 O  edge2
+        */
+
+        float centerDX = offset * (float) Math.sin(rad);
+        float centerDY = offset * (float) Math.cos(rad);
+        System.out.println("dcentr: " + centerDX + " " + centerDY);
+        // the normal vectors we use to find the edges
+        float nCenterDX = -(float) Math.cos(rad);
+        float nCenterDY = (float) Math.sin(rad);
+        System.out.println("n: " + nCenterDX + " " + nCenterDY);
+        // absolute center point coordinates
+        float centerPointX = player.posX + centerDX;
+        float centerPointY = player.posY + centerDY;
+        System.out.println("cpos: " + centerPointX + " " + centerPointY);
+        // absolute edge point coordinates
+        float edge1X = (centerPointX + nCenterDX);
+        float edge1Y = (centerPointY + nCenterDY);
+        System.out.println("e1: " + edge1X + " " + edge1Y);
+        float edge2X = (centerPointX - nCenterDX);
+        float edge2Y = (centerPointY - nCenterDY);
+        System.out.println("e2: " + edge2X + " " + edge2Y);
+        // X and Y steps between points used to cast rays
+        float dXStep = (edge2X - edge1X) / (rayCount - 1.0f);
+        float dYStep = (edge2Y - edge1Y) / (rayCount - 1.0f);
+
+        System.out.println("RAYS: -------------------");
         for (int i = 0; i < rayCount; i++) {
-            double rayAngle = Math.toRadians(startAngle + i * dAngle);
 
+            System.out.println(player.viewAngle);
             float x1 = player.posX;
             float y1 = player.posY;
-            float dx = renderDistance * (float) (Math.sin(rayAngle));
-            float dy = renderDistance * (float) (Math.cos(rayAngle));
-            float x2 = dx + x1;
-            float y2 = dy + y1;
+            System.out.println("playerpos: " + x1 + " " + y1);
+            float dx = (edge1X + (dXStep * i)) - player.posX;
+            float dy = (edge1Y + (dYStep * i)) - player.posY;
+            System.out.println("d: " + dx + " " + dy);
+            float x2 = x1 + renderDistance * dx;
+            float y2 = y1 + renderDistance * dy;
+            System.out.println("second: " + x2 + " " + y2);
 
             Ray ray = new Ray(x1, y1, x2, y2);
-
             ray.id = i;
+
             rays.add(ray);
         }
+        return rays;
+    }
+    public void cast(Player player, Map map) {
+        List<Ray> rays = createRays(player);
+
         for (Ray ray:rays) {
             for (Wall wall: map.walls) {
                 if (Ray.areIntersecting(ray,wall)) {
@@ -60,7 +106,8 @@ public class RayCaster {
             });
             for (Wall w : ray.intersectedWalls) {
                 ray.intersectedAnything.add(true);
-                ray.intersectionRelDistanceOnRay.add(getIntersectionT(ray, w));
+                float wallDistance = getIntersectionT(ray, w) * renderDistance;
+                ray.intersectionDistanceOnRay.add(wallDistance);
                 ray.intersectionRelDistanceOnWall.add(getIntersectionT(w, ray));
                 ray.colors.add(w.color);
                 ray.intersections.add(getIntersection(w, ray));
@@ -72,7 +119,7 @@ public class RayCaster {
         this.rays = rays;
     }
     public void updateMapVisibility() {
-        int depth = 1;
+        int depth = 0;
         List<List<Ray>> chainList = divideRays(rays, depth);
 
         for (List<Ray> sameWallRays : chainList) {
@@ -97,6 +144,7 @@ public class RayCaster {
         List<Ray> currentSublist = new ArrayList<>();
         int currentID = -1;
         for (Ray ray : rays) {
+            //currentID = -1; //-- uncomment for rectangles
             if (!ray.intersectedAnything.get(depth)) {
                 continue;
             }

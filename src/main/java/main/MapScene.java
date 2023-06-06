@@ -144,11 +144,23 @@ public class MapScene extends Scene{
         // map camera moving and zooming
         mapZoom = Math.min(Math.max(MouseListener.getScrollY() + mapZoom, minMapZoom), maxMapZoom);
         if (MouseListener.getScrollY() > 0) {
-            camera.position.x += (MouseListener.getX() - Window.window.width / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
-            camera.position.y -= (MouseListener.getY() - Window.window.height / 2.0f) * MouseListener.getScrollY() * scrollSensitivity;
-        } else {
-            camera.position.x += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.x;
-            camera.position.y += (MouseListener.getScrollY() * scrollSensitivity) * camera.position.y;
+            // while zooming in
+            float cursorPosX = MouseListener.getX() - Window.window.width / 2.0f;
+            float cursorPosY = MouseListener.getY() - Window.window.height / 2.0f;
+            camera.position.x += player.posX + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
+            camera.position.y -= player.posY + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
+        } else if (MouseListener.getScrollY() < 0){
+            // while zooming out
+            float cursorPosX = MouseListener.getX() - Window.window.width / 2.0f;
+            float cursorPosY = MouseListener.getY() - Window.window.height / 2.0f;
+
+            float targetX = player.posX + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
+            float targetY = player.posY + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
+
+            float smoothness = 0.2f;
+
+            camera.position.x = camera.position.x + (targetX - camera.position.x) * smoothness;
+            camera.position.y = camera.position.y + (targetY - camera.position.y) * smoothness;
         }
     }
     private void cameraFollowsPlayer() {
@@ -167,6 +179,7 @@ public class MapScene extends Scene{
             Wall newWall = new Wall(wallDrawCoords[0], wallDrawCoords[1], wallDrawCoords[2], wallDrawCoords[3]);
             newWall.color = new Color(1.0f,1.0f,1.0f,1.0f);
             newWall.id = map.lastWallID + 1;
+            newWall.height = 1.0f;
             map.lastWallID++;
             map.walls.add(newWall);
             MouseListener.get().heldButtons.replace(GLFW_MOUSE_BUTTON_2, false);
@@ -309,9 +322,9 @@ public class MapScene extends Scene{
         return elementList;
     }
     public List<Float> intersectionVertexList(RayCaster rayCaster) {
-        int depth = 1;
+        int depth = 0;
         List<Float> vertexList = new ArrayList<>();
-        List<List<Ray>> chainList = divideRays(rayCaster.rays, 1);
+        List<List<Ray>> chainList = divideRays(rayCaster.rays, depth);
         float width = 1.0f;
         float zoom = mapZoom;
 

@@ -222,35 +222,37 @@ public class MainScene extends Scene{
     // LISTS OF VERTEXES AND ELEMENTS
     // =======================
     public List<Float> wallVertexList(RayCaster rayCaster) {
-        int depth = 1;
         List<Float> vertexList = new ArrayList<>();
-        List<List<Ray>> chainList = divideRays(rayCaster.rays, depth);
 
-        for (List<Ray> rayList : chainList) {
-            Ray startRay = rayList.get(0);
-            Ray endRay = rayList.get(rayList.size()-1);
-            float startDistance = startRay.intersectionRelDistanceOnRay.get(depth) * rayCaster.renderDistance;
-            float endDistance = endRay.intersectionRelDistanceOnRay.get(depth) * rayCaster.renderDistance;
+        for (int depth = 0; depth < rayCaster.renderDepth; depth++) {
+            List<List<Ray>> chainList = divideRays(rayCaster.rays, depth);
 
-            int i = startRay.id;
-            int di = endRay.id - startRay.id + 1;
+            for (List<Ray> rayList : chainList) {
+                Ray startRay = rayList.get(0);
+                Ray endRay = rayList.get(rayList.size()-1);
+                float startDistance = startRay.intersectionDistanceOnRay.get(depth); // TODO fix the clipping
+                float endDistance = endRay.intersectionDistanceOnRay.get(depth);
 
-            float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
-            float ys = (float) (Window.get().height) / (startDistance); // y coordinate of start
-            float ye = (float) (Window.get().height) / (endDistance);
-            float xl = (float) i * screenPortion - Window.get().width / 2.0f;
-            float xr = (i + di) * screenPortion - Window.get().width / 2.0f;
+                int i = startRay.id;
+                int di = endRay.id - startRay.id + 1;
 
-            Color startColor = startRay.colors.get(depth).shade(startDistance);
-            Color endColor = endRay.colors.get(depth).shade(endDistance);
+                float screenPortion = (Window.get().width / (float) rayCaster.rayCount);
+                float ys =  ((float) (Window.get().height) / 2.0f) / (startDistance); // y coordinate of start
+                float ye =  ((float) (Window.get().height) / 2.0f) / (endDistance); // y coordinate of end
+                float xl = (float) i * screenPortion - Window.get().width / 2.0f;
+                float xr = (i + di) *  screenPortion - Window.get().width / 2.0f;
 
-            float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
-            float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
+                Color startColor = startRay.colors.get(depth).shade(startDistance);
+                Color endColor = endRay.colors.get(depth).shade(endDistance);
 
-            addVertex(vertexList, xl, ys, 1/startDistance, rs, gs, bs, as);
-            addVertex(vertexList, xr, ye, 1/endDistance, re, ge, be, ae);
-            addVertex(vertexList, xl, -ys, 1/startDistance, rs, gs, bs, as);
-            addVertex(vertexList, xr, -ye, 1/endDistance, re, ge, be, ae);
+                float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
+                float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
+
+                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).height, 1.0f/(depth + 1), rs, gs, bs, as);
+                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).height, 1.0f/(depth + 1), re, ge, be, ae);
+                addVertex(vertexList, xl, -ys, 1.0f/(depth + 1), rs, gs, bs, as);
+                addVertex(vertexList, xr, -ye, 1.0f/(depth + 1), re, ge, be, ae);
+            }
         }
         return vertexList;
     }
