@@ -9,7 +9,7 @@ public class Ray extends Line {
     public List<Boolean> intersectedAnything = new ArrayList<>();
     public List<Wall> intersectedWalls = new ArrayList<>();
     public List<Vector2f> intersections = new ArrayList<>();
-    public List<Float> intersectionRelDistanceOnRay = new ArrayList<>();
+    public List<Float> intersectionDistanceOnRay = new ArrayList<>();
     public List<Float> intersectionRelDistanceOnWall = new ArrayList<>();
     public List<Color> colors = new ArrayList<>();
     public int id = -1;
