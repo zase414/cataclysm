@@ -78,10 +78,12 @@ public class Map {
                 float a = wallObj.get("a").getAsFloat();
                 wall.color = new Color(r, g, b, a);
 
+                float h = wallObj.get("height").getAsFloat();
+                wall.height = h;
+
                 // ==== debug ====
                 //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
                 wall.id = id;
-                wall.height = 1.0f;
                 lastWallID = id;
                 walls.add(wall);
                 id++;
