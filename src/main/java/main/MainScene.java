@@ -13,13 +13,14 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.KeyListener.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
 import static render.RayCaster.divideRays;
 
 public class MainScene extends Scene{
-    public float[] vertexArray = {1.0f};
+    public float[] vertexArray = {};
     private int[] elementArray = {};
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
@@ -100,6 +101,7 @@ public class MainScene extends Scene{
 
         player.updateViewAngle();
         player.handlePlayerMovement(dt, map);
+        player.checkForJump(dt);
 
         rayCaster.cast(player, map);
         rayCaster.updateMapVisibility();
@@ -110,26 +112,27 @@ public class MainScene extends Scene{
 
         MouseListener.endFrame();
     }
+    private boolean queueJump;
     private void handleInputEvents() {
-        System.out.println("Number of rays: " + rayCaster.rayCount);
-        try {
-            if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, true);
-            } else if (KeyListener.get().heldKeys.get(GLFW_KEY_TAB)) {
-                Window.changeScene(2);
-                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, false);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            assert false : "key has not been initialized in the HashMap";
+        if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
+
+        if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && !(player.posZ > 0.0f)) {
+            player.jumpPhase = -0.25f;
+            queueJump = false;
         }
 
-        if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+        if (keyPushed(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < 0.25f) {
+            queueJump = true;
+        }
+
+        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             rayCaster.adjustRayCount();
         }
+
+        updateHeldKeys();
     }
     private void buildGraphicsArrays() {
         List<Float> vertexList = new ArrayList<>();
@@ -248,10 +251,10 @@ public class MainScene extends Scene{
                 float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
                 float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
 
-                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).height, 1.0f/(depth + 1), rs, gs, bs, as);
-                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).height, 1.0f/(depth + 1), re, ge, be, ae);
-                addVertex(vertexList, xl, -ys, 1.0f/(depth + 1), rs, gs, bs, as);
-                addVertex(vertexList, xr, -ye, 1.0f/(depth + 1), re, ge, be, ae);
+                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).topHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as);
+                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).topHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae);
+                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).botHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as);
+                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).botHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae);
             }
         }
         return vertexList;

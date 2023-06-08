@@ -3,7 +3,11 @@ package main;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import util.CollisionBox;
+import util.Line;
 import util.Ray;
+import util.Wall;
+
+import java.util.HashSet;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
@@ -11,14 +15,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 public class Player {
     public float posX;
     public float posY;
+    public float posZ;
+    public float height = 1.5f;
     public float viewAngle;
     public float speed = 10.0f;
+
     public CollisionBox collisionBox = new CollisionBox();
     public Vector2d movementVector = new Vector2d(0.0, 0.0);
     public Player (Map map) {
         this.posX = map.spawnPoint.x;
         this.posY = map.spawnPoint.y;
         this.viewAngle = map.spawnViewAngle;
+        this.posZ = map.spawnHeight;
     }
     public void updateCollisionBox() {
         float size = collisionBox.size;
@@ -35,26 +43,27 @@ public class Player {
     public void handlePlayerMovement(float dt, Map map) {
         Vector2d dPos = new Vector2d(0.0, 0.0);
         double strafeMultiplier = 1.0;
-        boolean playerIsStrafing = (KeyListener.isKeyPressed(GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW_KEY_S)) && (KeyListener.isKeyPressed(GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW_KEY_A));
+        boolean playerIsStrafing = (KeyListener.keyBeingPressed(GLFW_KEY_W) || KeyListener.keyBeingPressed(GLFW_KEY_S)) && (KeyListener.keyBeingPressed(GLFW_KEY_D) || KeyListener.keyBeingPressed(GLFW_KEY_A));
         double movementMultipliers = speed * dt * strafeMultiplier;
 
-        if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
+        if (KeyListener.keyBeingPressed(GLFW_KEY_W)) {
             dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle));
             dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle));
         }
-        if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
+        if (KeyListener.keyBeingPressed(GLFW_KEY_S)) {
             dPos.x -= movementMultipliers * Math.sin(Math.toRadians(viewAngle));
             dPos.y -= movementMultipliers * Math.cos(Math.toRadians(viewAngle));
         }
-        if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
+        if (KeyListener.keyBeingPressed(GLFW_KEY_A)) {
             dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle - 90));
             dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle - 90));
         }
-        if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
+        if (KeyListener.keyBeingPressed(GLFW_KEY_D)) {
             dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle + 90));
             dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle + 90));
         }
 
+        // correct strafing speed
         if (playerIsStrafing) {
             dPos.x *= Math.sqrt(2) / 2;
             dPos.y *= Math.sqrt(2) / 2;
@@ -63,7 +72,7 @@ public class Player {
         posX += dPos.x;
         // update X coordinate of the collision box
         updateCollisionBox();
-        if (CollisionBox.checkForCollisionsPlayer(map, this)) {
+        if (isColliding(map.walls)) {
             posX -= dPos.x;
             dPos.x = 0.0f;
         }
@@ -71,7 +80,7 @@ public class Player {
         posY += dPos.y;
         // update Y coordinate of the collision box
         updateCollisionBox();
-        if (CollisionBox.checkForCollisionsPlayer(map, this)) {
+        if (isColliding(map.walls)) {
             posY -= dPos.y;
             dPos.y = 0;
         }
@@ -82,6 +91,28 @@ public class Player {
     public void updateViewAngle() {
         if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
             viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
+        }
+    }
+    public boolean isColliding(HashSet<Wall> walls) {
+        boolean isClipping = false;
+        for (Line bound:collisionBox.bounds) {
+            for (Wall wall:walls) {
+                if (Ray.areIntersecting(bound, wall) && posZ < wall.topHeight && posZ + height > wall.botHeight) {
+                    isClipping = true;
+                }
+            }
+        }
+        return isClipping;
+    }
+    public float jumpPhase = 2.0f;
+    public void checkForJump(float dt) {
+        final float jumpHeight = 1.5f;
+        final float jumpSpeed = 24.0f;
+
+        posZ = - jumpSpeed * jumpPhase * jumpPhase + jumpHeight;
+        jumpPhase += dt;
+        if (jumpPhase > 0.25f) {
+            posZ = 0.0f;
         }
     }
 }
