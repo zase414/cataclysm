@@ -49,39 +49,29 @@ public class RayCaster {
 
         float centerDX = offset * (float) Math.sin(rad);
         float centerDY = offset * (float) Math.cos(rad);
-        System.out.println("dcentr: " + centerDX + " " + centerDY);
         // the normal vectors we use to find the edges
         float nCenterDX = -(float) Math.cos(rad);
         float nCenterDY = (float) Math.sin(rad);
-        System.out.println("n: " + nCenterDX + " " + nCenterDY);
         // absolute center point coordinates
         float centerPointX = player.posX + centerDX;
         float centerPointY = player.posY + centerDY;
-        System.out.println("cpos: " + centerPointX + " " + centerPointY);
         // absolute edge point coordinates
         float edge1X = (centerPointX + nCenterDX);
         float edge1Y = (centerPointY + nCenterDY);
-        System.out.println("e1: " + edge1X + " " + edge1Y);
         float edge2X = (centerPointX - nCenterDX);
         float edge2Y = (centerPointY - nCenterDY);
-        System.out.println("e2: " + edge2X + " " + edge2Y);
         // X and Y steps between points used to cast rays
         float dXStep = (edge2X - edge1X) / (rayCount - 1.0f);
         float dYStep = (edge2Y - edge1Y) / (rayCount - 1.0f);
 
-        System.out.println("RAYS: -------------------");
         for (int i = 0; i < rayCount; i++) {
 
-            System.out.println(player.viewAngle);
             float x1 = player.posX;
             float y1 = player.posY;
-            System.out.println("playerpos: " + x1 + " " + y1);
             float dx = (edge1X + (dXStep * i)) - player.posX;
             float dy = (edge1Y + (dYStep * i)) - player.posY;
-            System.out.println("d: " + dx + " " + dy);
             float x2 = x1 + renderDistance * dx;
             float y2 = y1 + renderDistance * dy;
-            System.out.println("second: " + x2 + " " + y2);
 
             Ray ray = new Ray(x1, y1, x2, y2);
             ray.id = i;
