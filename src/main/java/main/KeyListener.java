@@ -33,11 +33,7 @@ public class KeyListener {
     }
     public static void updateHeldKeys() {
         for (int i = 0; i < get().keyPressed.length; i++) {
-            if (get().keyPressed[i]) {
-                get().previouslyHeldKeys[i] = true;
-            } else {
-                get().previouslyHeldKeys[i] = false;
-            }
+            get().previouslyHeldKeys[i] = get().keyPressed[i];
         }
     }
 }

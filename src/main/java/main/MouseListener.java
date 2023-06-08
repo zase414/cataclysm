@@ -1,7 +1,5 @@
 package main;
 
-import java.util.HashMap;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseListener {
