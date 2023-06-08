@@ -8,9 +8,9 @@ public class MouseListener {
     private static MouseListener instance;
     private double scrollX, scrollY;
     private double xPos, yPos, lastY, lastX;
-    private boolean[] mouseButtonPressed = new boolean[3];
+    private boolean[] mouseButtonPressed = new boolean[10];
     private boolean isDragging;
-    HashMap<Integer, Boolean> heldButtons = new HashMap<>();
+    public boolean[] heldButtons = new boolean[10];
     private MouseListener() {
         this.scrollX = 0.0;
         this.scrollY = 0.0;
@@ -19,15 +19,9 @@ public class MouseListener {
         this.lastX = 0.0;
         this.lastY = 0.0;
     }
-    public void initHeldButtons() {
-        for (int button : new int[]{GLFW_MOUSE_BUTTON_2}) {
-            heldButtons.put(button, false);
-        }
-    }
     public static MouseListener get() {
         if (MouseListener.instance == null) {
             MouseListener.instance = new MouseListener();
-            instance.initHeldButtons();
         }
         return MouseListener.instance;
     }

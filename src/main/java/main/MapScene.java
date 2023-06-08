@@ -12,21 +12,23 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.KeyListener.isKeyReleased;
+import static main.KeyListener.updateHeldKeys;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.ARBVertexArrayObject.*;
 import static org.lwjgl.opengl.GL20.*;
 import static render.RayCaster.divideRays;
 
 public class MapScene extends Scene{
-    public float[] vertexArray = {0.0f};
-    private int[] elementArray = {0}; // ONLY COUNTER-CLOCKWISE ORDER WORKS
+    public float[] vertexArray = {};
+    private int[] elementArray = {};
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
     RayCaster rayCaster;
     Map map;
     Player player;
     int positionsSize = 3, colorSize = 4, floatSizeBytes = 4;
-    float mapZoom = 10.0f, minMapZoom = 1.0f, maxMapZoom = 40.0f;
+    float mapZoom = 10.0f, minMapZoom = 1.0f, maxMapZoom = 60.0f;
     public static MapScene instance = null;
     public static MapScene get() {
         if (MapScene.instance == null) {
@@ -112,21 +114,10 @@ public class MapScene extends Scene{
     }
     float[] wallDrawCoords = new float[4];
     private void handleInputEvents() {
-        // scene switch, TAB related stuff
-        try {
-            if (KeyListener.isKeyPressed(GLFW_KEY_TAB)) {
-                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, true);
-            } else if (KeyListener.get().heldKeys.get(GLFW_KEY_TAB)) {
-                Window.changeScene(1);
-                KeyListener.get().heldKeys.replace(GLFW_KEY_TAB, false);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            assert false : "key has not been initialized in the HashMap";
-        }
+        if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(1);
 
         // mouse cursor state & ALT-related stuff
-        if (KeyListener.isKeyPressed(GLFW_KEY_LEFT_ALT)) {
+        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
             drawWalls();
             // show mouse cursor
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -138,6 +129,8 @@ public class MapScene extends Scene{
                 cameraFollowsPlayer();
             }
         }
+
+        updateHeldKeys();
     }
     private void cameraMouseControl() {
         float scrollSensitivity = 0.1f;
@@ -169,20 +162,20 @@ public class MapScene extends Scene{
         camera.position.y += dPos.y * mapZoom;
     }
     private void drawWalls() {
-        if (!MouseListener.get().heldButtons.get(GLFW_MOUSE_BUTTON_2) && MouseListener.mouseButtonDown(1)) {
+        if (!MouseListener.get().heldButtons[GLFW_MOUSE_BUTTON_2] && MouseListener.mouseButtonDown(1)) {
             wallDrawCoords[0] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
             wallDrawCoords[1] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
-            MouseListener.get().heldButtons.replace(GLFW_MOUSE_BUTTON_2, true);
-        } else if (MouseListener.get().heldButtons.get(GLFW_MOUSE_BUTTON_2) && !MouseListener.mouseButtonDown(1)) {
+            MouseListener.get().heldButtons[GLFW_MOUSE_BUTTON_2] = true;
+        } else if (MouseListener.get().heldButtons[GLFW_MOUSE_BUTTON_2] && !MouseListener.mouseButtonDown(1)) {
             wallDrawCoords[2] = ((MouseListener.getX() - Window.get().width / 2.0f)/mapZoom + (camera.position.x / mapZoom));
             wallDrawCoords[3] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
             Wall newWall = new Wall(wallDrawCoords[0], wallDrawCoords[1], wallDrawCoords[2], wallDrawCoords[3]);
             newWall.color = new Color(1.0f,1.0f,1.0f,1.0f);
             newWall.id = map.lastWallID + 1;
-            newWall.height = 1.0f;
+            newWall.topHeight = 1.0f;
             map.lastWallID++;
             map.walls.add(newWall);
-            MouseListener.get().heldButtons.replace(GLFW_MOUSE_BUTTON_2, false);
+            MouseListener.get().heldButtons[GLFW_MOUSE_BUTTON_2] = false;
         }
     }
     private void buildGraphicsArrays() {

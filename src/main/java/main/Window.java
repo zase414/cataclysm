@@ -147,13 +147,13 @@ public class Window {
 
             glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
 
-            if (KeyListener.isKeyPressed(GLFW_KEY_F1)) {
+            if (KeyListener.keyBeingPressed(GLFW_KEY_F1)) {
                 changeScene(0);
             }
-            if (KeyListener.isKeyPressed(GLFW_KEY_F2)) {
+            if (KeyListener.keyBeingPressed(GLFW_KEY_F2)) {
                 changeScene(1);
             }
-            if (KeyListener.isKeyPressed(GLFW_KEY_F3)) {
+            if (KeyListener.keyBeingPressed(GLFW_KEY_F3)) {
                 changeScene(2);
             }
 
