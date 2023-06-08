@@ -66,14 +66,14 @@ public abstract class Scene {
     public static void addQuadBeamElements(List<Integer> elementList, int firstElementIndex, int i) {
         /*
                 0----1---------4----5
-                |   /|         |   /|
-                |  / |         |  / |
-                | /  |         | /  |
-                |/   |         |/   |
+                |    |         |    |
+                |    |         |    |
+                |    |         |    |
+                |    |         |    |
                 2----3---------6----7
         */
         int k = 8 * i;
-        for (int v : new int[]{2,1,0,1,2,3,  6,5,4,5,6,7,  0,4,5,5,1,0,  0,2,6,6,4,0,  2,6,7,7,3,2,  3,7,5,5,1,3}) {
+        for (int v : new int[]{1,2,6,6,5,1,  0,4,7,7,3,0}) {
             elementList.add(firstElementIndex + v + k);
         }
     }
