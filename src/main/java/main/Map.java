@@ -16,6 +16,7 @@ public class Map {
     public HashSet<Wall> walls = new HashSet<>();
     public Vector2f spawnPoint = new Vector2f();
     public float spawnViewAngle;
+    public float spawnHeight;
     public Color skyColor = new Color();
     public Color groundColor = new Color();
     public int lastWallID;
@@ -54,6 +55,9 @@ public class Map {
             // extract spawn view angle
             this.spawnViewAngle = jsonObject.get("spawn_view_angle").getAsFloat();
 
+            // extract spawn height
+            this.spawnViewAngle = jsonObject.get("spawn_height").getAsFloat();
+
             // print the spawn_view_angle
             System.out.println("Spawn View Angle: " + spawnViewAngle);
 
@@ -70,23 +74,25 @@ public class Map {
 
                 Wall wall = new Wall(x1, y1, x2, y2);
 
-
-
                 float r = wallObj.get("r").getAsFloat();
                 float g = wallObj.get("g").getAsFloat();
                 float b = wallObj.get("b").getAsFloat();
                 float a = wallObj.get("a").getAsFloat();
                 wall.color = new Color(r, g, b, a);
 
-                float h = wallObj.get("height").getAsFloat();
-                wall.height = h;
+                float hmax = wallObj.get("hmax").getAsFloat();
+                wall.topHeight = hmax;
 
-                // ==== debug ====
-                //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
+                float hmin = wallObj.get("hmin").getAsFloat();
+                wall.botHeight = hmin;
+
                 wall.id = id;
                 lastWallID = id;
                 walls.add(wall);
                 id++;
+
+                // ==== debug ====
+                //System.out.println("Line coordinates " + (i + 1) + ": (" + wall.x1 + ", " + wall.y1 + ", " + wall.x2 + ", " + wall.y2 + ")");
             }
         } catch (IOException e) {
             e.printStackTrace();
