@@ -19,7 +19,7 @@ public class Map {
     public float spawnHeight;
     public Color skyColor = new Color();
     public Color groundColor = new Color();
-    public int lastWallID;
+    public int highestWallID;
     public Map (String filepath) {
         this.filepath = filepath;
     }
@@ -87,7 +87,7 @@ public class Map {
                 wall.botHeight = hmin;
 
                 wall.id = id;
-                lastWallID = id;
+                highestWallID = id;
                 walls.add(wall);
                 id++;
 

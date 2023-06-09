@@ -16,7 +16,7 @@ public class MenuScene extends Scene{
         return MenuScene.instance;
     }
     @Override
-    public void update(float dt) {
+    public void update(double dt) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 }

@@ -1,7 +1,7 @@
 package main;
 
-import org.joml.Vector2d;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
@@ -27,8 +27,7 @@ public class MapScene extends Scene{
     RayCaster rayCaster;
     Map map;
     Player player;
-    int positionsSize = 3, colorSize = 4, floatSizeBytes = 4;
-    float mapZoom = 10.0f, minMapZoom = 1.0f, maxMapZoom = 60.0f;
+    float mapZoom = 10.0f, minMapZoom = 1.0f, maxMapZoom = 100.0f;
     public static MapScene instance = null;
     public static MapScene get() {
         if (MapScene.instance == null) {
@@ -94,7 +93,7 @@ public class MapScene extends Scene{
         glEnableVertexAttribArray(1);
     }
     @Override
-    public void update(float dt) {
+    public void update(double dt) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -157,7 +156,7 @@ public class MapScene extends Scene{
         }
     }
     private void cameraFollowsPlayer() {
-        Vector2d dPos = player.movementVector;
+        Vector3d dPos = player.movementVector;
         camera.position.x += dPos.x * mapZoom;
         camera.position.y += dPos.y * mapZoom;
     }
@@ -171,9 +170,9 @@ public class MapScene extends Scene{
             wallDrawCoords[3] = (((MouseListener.getY() - Window.get().height / 2.0f)/mapZoom*(-1.0f)) + (camera.position.y / mapZoom));
             Wall newWall = new Wall(wallDrawCoords[0], wallDrawCoords[1], wallDrawCoords[2], wallDrawCoords[3]);
             newWall.color = new Color(1.0f,1.0f,1.0f,1.0f);
-            newWall.id = map.lastWallID + 1;
+            newWall.id = map.highestWallID + 1;
             newWall.topHeight = 1.0f;
-            map.lastWallID++;
+            map.highestWallID++;
             map.walls.add(newWall);
             MouseListener.get().heldButtons[GLFW_MOUSE_BUTTON_2] = false;
         }
@@ -228,7 +227,7 @@ public class MapScene extends Scene{
         defaultShader.use();
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
-        defaultShader.uploadFloat("uTime", Time.getTime());
+        defaultShader.uploadFloat("uTime", (float) Time.getTime());
 
         // ---------------------------------
         // generate VAO, VBO, EBO and send them to GPU

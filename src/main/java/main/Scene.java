@@ -15,7 +15,7 @@ public abstract class Scene {
     public void init() {
 
     }
-    public abstract void update(float dt);
+    public abstract void update(double dt);
     public int getHighestIndex(List<Integer> elementList) {
         int index = 0;
         if (!elementList.isEmpty()) index = Collections.max(elementList);

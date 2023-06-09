@@ -128,9 +128,9 @@ public class Window {
         this.height = height[0];
         this.width = width[0];
 
-        float beginTime = Time.getTime();
-        float endTime;
-        float dt = -1.0f;
+        double beginTime = Time.getTime();
+        double endTime;
+        double dt = -1.0f;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
 

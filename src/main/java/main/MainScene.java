@@ -94,14 +94,13 @@ public class MainScene extends Scene{
         glEnableVertexAttribArray(1);
     }
     @Override
-    public void update(float dt) {
+    public void update(double dt) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         handleInputEvents();
 
         player.updateViewAngle();
         player.handlePlayerMovement(dt, map);
-        player.checkForJump(dt);
 
         rayCaster.cast(player, map);
         rayCaster.updateMapVisibility();
@@ -116,12 +115,12 @@ public class MainScene extends Scene{
     private void handleInputEvents() {
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
 
-        if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && !(player.posZ > 0.0f)) {
-            player.jumpPhase = -0.25f;
+        if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
+            player.jumpPhase = player.minPhase;
             queueJump = false;
         }
 
-        if (keyPushed(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < 0.25f) {
+        if (keyPushed(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
             queueJump = true;
         }
 
@@ -174,7 +173,7 @@ public class MainScene extends Scene{
         defaultShader.use();
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
-        defaultShader.uploadFloat("uTime", Time.getTime());
+        defaultShader.uploadFloat("uTime", (float) Time.getTime());
 
         // ---------------------------------
         // generate VAO, VBO, EBO and send them to GPU

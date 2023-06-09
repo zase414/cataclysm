@@ -1,7 +1,7 @@
 package main;
 
-import org.joml.Vector2d;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import util.CollisionBox;
 import util.Line;
 import util.Ray;
@@ -21,7 +21,7 @@ public class Player {
     public float speed = 10.0f;
 
     public CollisionBox collisionBox = new CollisionBox();
-    public Vector2d movementVector = new Vector2d(0.0, 0.0);
+    public Vector3d movementVector = new Vector3d();
     public Player (Map map) {
         this.posX = map.spawnPoint.x;
         this.posY = map.spawnPoint.y;
@@ -40,8 +40,10 @@ public class Player {
         bounds[2] = new Ray(br.x, br.y, bl.x, bl.y);
         bounds[3] = new Ray(bl.x, bl.y, tl.x, tl.y);
     }
-    public void handlePlayerMovement(float dt, Map map) {
-        Vector2d dPos = new Vector2d(0.0, 0.0);
+    public boolean isInAir;
+    public void handlePlayerMovement(double dt, Map map) {
+
+        Vector3d dPos = new Vector3d(0.0, 0.0, 0.0);
         double strafeMultiplier = 1.0;
         boolean playerIsStrafing = (KeyListener.keyBeingPressed(GLFW_KEY_W) || KeyListener.keyBeingPressed(GLFW_KEY_S)) && (KeyListener.keyBeingPressed(GLFW_KEY_D) || KeyListener.keyBeingPressed(GLFW_KEY_A));
         double movementMultipliers = speed * dt * strafeMultiplier;
@@ -69,21 +71,41 @@ public class Player {
             dPos.y *= Math.sqrt(2) / 2;
         }
 
+        // update X coordinate
         posX += dPos.x;
-        // update X coordinate of the collision box
         updateCollisionBox();
         if (isColliding(map.walls)) {
             posX -= dPos.x;
             dPos.x = 0.0f;
         }
 
+        // update Y coordinate
         posY += dPos.y;
-        // update Y coordinate of the collision box
         updateCollisionBox();
+        // if it causes a collision, revert it and nullify the vector
         if (isColliding(map.walls)) {
             posY -= dPos.y;
-            dPos.y = 0;
+            dPos.y = 0.0f;
         }
+
+        // update Z coordinate
+        double phaseStart = jumpPhase;
+        double phaseEnd = phaseStart + dt;
+        dPos.z = getPhaseHeight(phaseEnd) - getPhaseHeight(phaseStart);
+        posZ += dPos.z;
+        updateCollisionBox();
+        // if it causes a collision, revert it and nullify the phase
+        if (isColliding(map.walls)) {
+            isInAir = false;
+            posZ = contactZ;
+            jumpPhase = 0.0f;
+        } else if (posZ < 0.0f) {
+            isInAir = false;
+            posZ = 0.0f;
+            jumpPhase = 0.0f;
+        } else isInAir = true;
+        jumpPhase += dt;
+        System.out.println(posZ);
 
         updateCollisionBox();
         movementVector = dPos;
@@ -93,26 +115,26 @@ public class Player {
             viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
         }
     }
+    float contactZ;
     public boolean isColliding(HashSet<Wall> walls) {
         boolean isClipping = false;
         for (Line bound:collisionBox.bounds) {
             for (Wall wall:walls) {
                 if (Ray.areIntersecting(bound, wall) && posZ < wall.topHeight && posZ + height > wall.botHeight) {
                     isClipping = true;
+                    if (posZ > wall.botHeight) {
+                        contactZ = wall.topHeight;
+                    } else contactZ = wall.botHeight - height;
                 }
             }
         }
         return isClipping;
     }
-    public float jumpPhase = 2.0f;
-    public void checkForJump(float dt) {
-        final float jumpHeight = 1.5f;
-        final float jumpSpeed = 24.0f;
-
-        posZ = - jumpSpeed * jumpPhase * jumpPhase + jumpHeight;
-        jumpPhase += dt;
-        if (jumpPhase > 0.25f) {
-            posZ = 0.0f;
-        }
+    public float jumpPhase = 0.0f;
+    public float minPhase = -0.25f;
+    final float maxPhase = - minPhase;
+    final float velocity = 24.0f;
+    public double getPhaseHeight(double x) {
+        return - velocity * (x*x);
     }
 }
