@@ -39,7 +39,7 @@ public class MainScene extends Scene{
     public void init() {
 
         // initialize the map
-        map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
+        map = new Map("assets/maps/conversion_example.json");
         map.compile();
 
         // initialize the rayCaster
@@ -47,7 +47,7 @@ public class MainScene extends Scene{
 
         // initialize the player
         player = new Player(map);
-        player.collisionBox.size = 0.5f;
+        player.collisionBox.size = 0.2f;
 
         // initialize the camera
         camera = new Camera(new Vector2f());
@@ -56,9 +56,9 @@ public class MainScene extends Scene{
         defaultShader = new Shader("assets/shaders/default.glsl");
         defaultShader.compile();
 
-        // ---------------------------------
+        // -------------------------------------------
         // generate VAO, VBO, EBO and send them to GPU
-        // ---------------------------------
+        // -------------------------------------------
 
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
@@ -114,6 +114,10 @@ public class MainScene extends Scene{
     private boolean queueJump;
     private void handleInputEvents() {
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
+
+        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
+            player.speed = 15.0f;
+        } else player.speed = 10.0f;
 
         if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
             player.jumpPhase = player.minPhase;
@@ -175,9 +179,9 @@ public class MainScene extends Scene{
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
         defaultShader.uploadFloat("uTime", (float) Time.getTime());
 
-        // ---------------------------------
+        // -------------------------------------------
         // generate VAO, VBO, EBO and send them to GPU
-        // ---------------------------------
+        // ------------------------------------------
 
         glBindVertexArray(vaoID);
 
@@ -220,9 +224,9 @@ public class MainScene extends Scene{
         glBindVertexArray(0);
         defaultShader.detach();
     }
-    // =======================
+    // ==============================
     // LISTS OF VERTEXES AND ELEMENTS
-    // =======================
+    // ==============================
     public List<Float> wallVertexList(RayCaster rayCaster) {
         List<Float> vertexList = new ArrayList<>();
 
