@@ -7,7 +7,7 @@ import render.RayCaster;
 public class RayCasterTest {
     public static void main(String[] args) {
 
-        Map map = new Map("C:\\Users\\zas\\IdeaProjects\\cataclysm\\assets\\maps\\testmap.json");
+        Map map = new Map("assets/maps/testmap.json");
         map.compile();
         Player player = new Player(map);
         System.out.println("x: " + player.posX + ", y: " + player.posY + ", angle: " + player.viewAngle);

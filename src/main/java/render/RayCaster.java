@@ -8,8 +8,9 @@ import main.MouseListener;
 import main.Player;
 import util.*;
 
-import static util.Line.getIntersection;
-import static util.Line.getIntersectionT;
+import static main.Intersecter.getIntersection;
+import static main.Intersecter.getIntersectionT;
+import static main.Intersecter.areIntersecting;
 
 public class RayCaster {
     public float renderDistance;
@@ -85,7 +86,7 @@ public class RayCaster {
 
         for (Ray ray:rays) {
             for (Wall wall: map.walls) {
-                if (Ray.areIntersecting(ray,wall)) {
+                if (areIntersecting(ray,wall)) {
                     ray.intersectedWalls.add(wall);
                 }
             }
@@ -135,9 +136,7 @@ public class RayCaster {
         int currentID = -1;
         for (Ray ray : rays) {
             //currentID = -1; //-- uncomment for rectangles
-            if (!ray.intersectedAnything.get(depth)) {
-                continue;
-            }
+            if (!ray.intersectedAnything.get(depth)) continue;
             int wallID = ray.intersectedWalls.get(depth).id;
             if (wallID != currentID) {
                 currentSublist = new ArrayList<>();

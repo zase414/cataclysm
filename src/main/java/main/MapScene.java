@@ -283,7 +283,7 @@ public class MapScene extends Scene{
         float width = 1.0f;
         float zoom = mapZoom;
 
-        if (Settings.mapAlwaysVisible) {
+        if (Settings.mapFullyVisible) {
             for (Wall wall:map.walls) {
                 addSquareVertexes(vertexList, wall.x1, wall.y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
                 addSquareVertexes(vertexList, wall.x2, wall.y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);

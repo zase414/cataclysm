@@ -9,6 +9,7 @@ import util.Wall;
 
 import java.util.HashSet;
 
+import static main.Intersecter.areIntersecting;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 
@@ -120,7 +121,7 @@ public class Player {
         boolean isClipping = false;
         for (Line bound:collisionBox.bounds) {
             for (Wall wall:walls) {
-                if (Ray.areIntersecting(bound, wall) && posZ < wall.topHeight && posZ + height > wall.botHeight) {
+                if (areIntersecting(bound, wall) && posZ < wall.topHeight && posZ + height > wall.botHeight) {
                     isClipping = true;
                     if (posZ > wall.botHeight) {
                         contactZ = wall.topHeight;

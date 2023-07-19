@@ -48,18 +48,11 @@ public class Map {
             groundColor.b = groundColorObj.get("b").getAsFloat();
             groundColor.a = groundColorObj.get("a").getAsFloat();
 
-
-            // print the spawn coordinates
-            System.out.println("Spawn coords: " + spawnPoint.x + "; " + spawnPoint.y);
-
             // extract spawn view angle
             this.spawnViewAngle = jsonObject.get("spawn_view_angle").getAsFloat();
 
             // extract spawn height
-            this.spawnViewAngle = jsonObject.get("spawn_height").getAsFloat();
-
-            // print the spawn_view_angle
-            System.out.println("Spawn View Angle: " + spawnViewAngle);
+            this.spawnHeight = jsonObject.get("spawn_height").getAsFloat();
 
             // extract walls coordinates
             JsonArray wallsArray = jsonObject.getAsJsonArray("walls");
