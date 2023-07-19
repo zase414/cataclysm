@@ -138,14 +138,13 @@ public class MainScene extends Scene{
         updateHeldKeys();
     }
     private void buildGraphicsArrays() {
-        List<Float> vertexList = new ArrayList<>();
         List<Integer> elementList = new ArrayList<>();
 
         // create ground related vertex and element lists, add them to the final list
         List<Float> groundVertexList = groundVertexList(map);
         List<Integer> groundElementList = groundElementList(getHighestIndex(elementList));
 
-        vertexList.addAll(groundVertexList);
+        List<Float> vertexList = new ArrayList<>(groundVertexList);
         elementList.addAll(groundElementList);
 
         // create sky related vertex and element lists, add them to the final list

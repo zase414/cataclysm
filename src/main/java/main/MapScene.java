@@ -178,14 +178,13 @@ public class MapScene extends Scene{
         }
     }
     private void buildGraphicsArrays() {
-        List<Float> vertexList = new ArrayList<>();
         List<Integer> elementList = new ArrayList<>();
 
         // create wall related vertex and element lists, add them to the final list
         List<Float> wallVertexList = wallVertexList(map);
         List<Integer> wallElementList = wallElementList(wallVertexList.size(), getHighestIndex(elementList));
 
-        vertexList.addAll(wallVertexList);
+        List<Float> vertexList = new ArrayList<>(wallVertexList);
         elementList.addAll(wallElementList);
 
         // create cast rays vertex and element lists, add them to the final list
