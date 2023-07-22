@@ -141,7 +141,7 @@ public class MenuScene extends Scene{
     }
     private void handleInputEvents() {
         if (isKeyReleased(GLFW_KEY_TAB)) {
-            System.out.println("map " + (currentMapIndex + 1) + "/" + maps.size());
+
             if (maps.size() - currentMapIndex > 1) {
                 currentMapIndex++;
             } else {
@@ -152,6 +152,8 @@ public class MenuScene extends Scene{
             MainScene.get().player = new Player(map);
             MapScene.get().map = map;
             MapScene.get().player = new Player(map);
+
+            System.out.println("map " + (currentMapIndex + 1) + "/" + maps.size());
         }
 
         if (isKeyReleased(GLFW_KEY_ENTER)) mapConverter.run();
