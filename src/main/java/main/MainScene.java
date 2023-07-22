@@ -39,7 +39,7 @@ public class MainScene extends Scene{
     public void init() {
 
         // initialize the map
-        map = new Map("assets/maps/conversion_example.json");
+        map = MenuScene.get().map;
         map.compile();
 
         // initialize the rayCaster
@@ -47,7 +47,6 @@ public class MainScene extends Scene{
 
         // initialize the player
         player = new Player(map);
-        player.collisionBox.size = 0.2f;
 
         // initialize the camera
         camera = new Camera(new Vector2f());
@@ -134,6 +133,8 @@ public class MainScene extends Scene{
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             rayCaster.adjustRayCount();
         }
+
+        if (isKeyReleased(GLFW_KEY_ESCAPE)) Window.changeScene(0);
 
         updateHeldKeys();
     }

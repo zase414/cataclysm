@@ -28,6 +28,7 @@ public class Player {
         this.posY = map.spawnPoint.y;
         this.viewAngle = map.spawnViewAngle;
         this.posZ = map.spawnHeight;
+        this.collisionBox.size = 0.2f;
     }
     public void updateCollisionBox() {
         float size = collisionBox.size;
@@ -106,7 +107,6 @@ public class Player {
             jumpPhase = 0.0f;
         } else isInAir = true;
         jumpPhase += dt;
-        System.out.println(posZ);
 
         updateCollisionBox();
         movementVector = dPos;

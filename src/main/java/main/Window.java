@@ -34,13 +34,13 @@ public class Window {
         switch (newScene) {
             case 0 -> {
                 System.out.println("Scene -> Menu");
+                // switch scene and initialize it if needed
                 currentScene = MenuScene.get();
                 // un-clip the mouse, remember the coordinates
                 float mouseX = MouseListener.getX();
                 float mouseY = MouseListener.getY();
                 glfwSetInputMode(window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 glfwSetCursorPos(Window.window.glfwWindow, mouseX, mouseY);
-                currentScene.init();
             }
             case 1 -> {
                 System.out.println("Scene -> FPV");

@@ -43,7 +43,7 @@ public class MapScene extends Scene{
         rayCaster = MainScene.get().rayCaster;
 
         // initialize the map
-        map = MainScene.get().map;
+        map = MenuScene.get().map;
 
         // initialize the player
         player = MainScene.get().player;

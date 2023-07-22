@@ -18,7 +18,7 @@ public class RayCaster {
     public float fov;
     public int rayCount;
     public List<Ray> rays;
-    public int renderDepth = 10;
+    public int renderDepth = 100;
     public RayCaster(float fov, float renderDistance, int rayCount, float fadeOutDistance) {
         this.fadeOutDistance = fadeOutDistance;
         this.renderDistance = renderDistance;
@@ -27,7 +27,8 @@ public class RayCaster {
     }
 
     public List<Ray> createRays(Player player) {
-        float offset = 1.0f;
+
+        float offset = 1.0f/ (float) Math.abs(Math.tan(fov/2.0f));
         List<Ray> rays = new ArrayList<>();
         // degrees -> radians
         double rad = Math.toRadians(player.viewAngle);

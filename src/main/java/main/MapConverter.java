@@ -69,9 +69,10 @@ public class MapConverter {
                 Vector3f rgbValues = new Vector3f(r, g, b);
                 colorMap.put(key, rgbValues);
             }
-
+            // search for lines in the file
             List<String> wallOccurrenceList = generateOccurrenceList("draw .line width.+;", input);
             for (String occurrence : wallOccurrenceList) {
+                // get the values from the string
                 float wallHeight = Float.parseFloat(findSingularOccurrence("width=\\d[.]?\\d*", occurrence).replace("width=", ""));
                 String[] firstPoint = findSingularOccurrence("] [(].?\\d+[.]?\\d*,.?\\d+[.]?\\d*", occurrence).replace("] (", "").split(",");
                 float x1 = Float.parseFloat(firstPoint[0]);
@@ -137,7 +138,14 @@ public class MapConverter {
         output = output.concat(foot);
 
         try {
-            File export = new File(exportFilepath);
+            // get the file
+            File export = new File(exportFilepath.concat("converted_map.json"));
+            int suffix = 2;
+            while (export.exists()) {
+                String sufString = String.valueOf(suffix);
+                export = new File(exportFilepath.concat("converted_map").concat("(").concat(sufString).concat(").json"));
+                suffix++;
+            }
             FileWriter fw = new FileWriter(export.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(output);
@@ -187,7 +195,7 @@ public class MapConverter {
         } else inputFilepath = file.getAbsolutePath();
 
         // WHERE TO EXPORT TO
-        final String exportFilepath = "assets/maps/conversion_example.json";
+        final String exportFolderPath = "assets/maps/";
 
         // SETTINGS THAT CAN'T BE IMPORTED
         final float spawnX = 0.0f, spawnY = 0.0f;
@@ -196,8 +204,8 @@ public class MapConverter {
         final float spawnAngle = 0.0f;
         final float spawnHeight = 0.0f;
 
-        exportMap(inputFilepath, exportFilepath, spawnX, spawnY, skyColor, groundColor, spawnAngle, spawnHeight);
+        exportMap(inputFilepath, exportFolderPath, spawnX, spawnY, skyColor, groundColor, spawnAngle, spawnHeight);
 
-        System.out.println("Data successfully exported to " + exportFilepath);
+        System.out.println("Data successfully exported to " + exportFolderPath);
     }
 }
