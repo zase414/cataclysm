@@ -131,7 +131,6 @@ public class MenuScene extends Scene{
         handleInputEvents();
 
         rayCaster.cast(player, map);
-        rayCaster.updateMapVisibility();
 
         buildGraphicsArrays();
 

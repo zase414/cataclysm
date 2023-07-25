@@ -104,6 +104,7 @@ public class MapScene extends Scene{
         player.handlePlayerMovement(dt, map);
 
         rayCaster.cast(player, map);
+        rayCaster.updateMapVisibility();
 
         buildGraphicsArrays();
 
