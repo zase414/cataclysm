@@ -2,7 +2,7 @@ package main;
 
 public class Settings {
     // input
-    static float mouseSensitivity = 0.2f;
+    static float mouseSensitivity = 0.1f;
 
     // graphics
     static float renderDistance = 1000.0f;

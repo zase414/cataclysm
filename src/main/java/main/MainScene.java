@@ -115,8 +115,8 @@ public class MainScene extends Scene{
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
 
         if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
-            player.speed = 15.0f;
-        } else player.speed = 10.0f;
+            player.speed = 6.0f;
+        } else player.speed = 4.0f;
 
         if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
             player.jumpPhase = player.minPhase;

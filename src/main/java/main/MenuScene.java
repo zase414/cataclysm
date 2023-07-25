@@ -306,12 +306,12 @@ public class MenuScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-        float r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f;
+        float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
 
         addVertex(skyVertexList, xl, y, 0.0f, r, g, b, a); // top left
         addVertex(skyVertexList, xr, y, 0.0f, r, g, b, a); // top right
-        addVertex(skyVertexList, xl, 0.0f, 0.0f, r, g, b, a); // bottom left
-        addVertex(skyVertexList, xr, 0.0f, 0.0f, r, g, b, a); // bottom right
+        addVertex(skyVertexList, xl, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom left
+        addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom right
         return skyVertexList;
     }
     public List<Integer> skyElementList(int firstElementIndex) {

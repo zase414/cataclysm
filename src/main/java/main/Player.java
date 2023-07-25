@@ -19,7 +19,7 @@ public class Player {
     public float posZ;
     public float height = 1.5f;
     public float viewAngle;
-    public float speed = 10.0f;
+    public float speed = 4.0f;
 
     public CollisionBox collisionBox = new CollisionBox();
     public Vector3d movementVector = new Vector3d();
