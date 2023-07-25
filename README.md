@@ -21,7 +21,7 @@ enabled movement along the z-axis, improved the engine to allow multi-layer rend
 added the ability to walk on top of walls\
 ![](https://github.com/zase414/assets/blob/main/7.gif)
 #### v0.5.0
-added option to convert PGF/TikZ files (GeoGebra export option) to in-game maps\
+added option to convert PGF/TikZ files (GeoGebra export option) to in-game maps
 #### v0.5.1 
 menu screen improved, here you can select a map to play from the "maps" folder
 
