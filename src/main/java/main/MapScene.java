@@ -99,11 +99,11 @@ public class MapScene extends Scene{
 
         handleInputEvents();
 
+        player = MainScene.get().player;
         player.updateViewAngle();
         player.handlePlayerMovement(dt, map);
 
         rayCaster.cast(player, map);
-        rayCaster.updateMapVisibility();
 
         buildGraphicsArrays();
 
