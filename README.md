@@ -15,7 +15,7 @@ improved minimap and optimized rendering that only renders one trapezoid per wal
 minimap only renders the parts which have been revealed by the player\
 ![](https://github.com/zase414/assets/blob/main/5.gif)
 #### v0.4.0
-enabled movement along the z-axis and multi-layer rendering\
+enabled movement along the z-axis, improved the engine to allow multi-layer rendering\
 ![](https://github.com/zase414/assets/blob/main/6.gif)
 #### v0.4.1
 added the ability to walk on top of walls\
