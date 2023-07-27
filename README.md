@@ -21,11 +21,11 @@
   </details>
   <details>
     <summary><h4>v0.4.0:</h4><br>enabled movement along the z-axis, improved the engine to allow multi-layer rendering</summary>
-    <img src="https://github.com/zase414/assets/blob/main/5.gif" style="width:360px;height:200px;">
+    <img src="https://github.com/zase414/assets/blob/main/6.gif" style="width:360px;height:200px;">
   </details>
   <details>
     <summary><h4>v0.4.1:</h4><br>added the ability to walk on top of walls</summary>
-    <img src="https://github.com/zase414/assets/blob/main/6.gif" style="width:360px;height:200px;">
+    <img src="https://github.com/zase414/assets/blob/main/7.gif" style="width:360px;height:200px;">
   </details>
   <details>
     <summary><h4>v0.5.0:</h4><br>added option to convert PGF/TikZ files (GeoGebra export option) to in-game maps</summary>
