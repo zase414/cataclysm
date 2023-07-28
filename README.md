@@ -37,9 +37,9 @@
 
 <details>
   <summary><h2>dependencies</h2></summary>
-  LWJGL 3.3.2<br>
-  JOML 1.10.5<br>
-  GSON 2.10.1
+  <a href="https://www.lwjgl.org/download">LWJGL 3.3.2</a><br>
+  <a href="https://github.com/JOML-CI/JOML">JOML 1.10.5</a><br>
+  <a href="https://github.com/google/gson">GSON 2.10.1</a>
 </details>
 <details>
 <summary><h2>planned features</h2></summary>
