@@ -116,6 +116,10 @@ public class MapScene extends Scene{
     private void handleInputEvents() {
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(1);
 
+        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
+            player.speed = 6.0f;
+        } else player.speed = 4.0f;
+
         // mouse cursor state & ALT-related stuff
         if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
             drawWalls();
@@ -129,6 +133,8 @@ public class MapScene extends Scene{
                 cameraFollowsPlayer();
             }
         }
+
+        if (isKeyReleased(GLFW_KEY_ESCAPE)) Window.changeScene(0);
 
         updateHeldKeys();
     }
