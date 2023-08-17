@@ -23,6 +23,7 @@
   </ul>
   <h3>Map</h3>
   <ul>
+    <li><code>Tab</code> to toggle</li>
     <li><code>LAlt</code> to interrupt player tracking</li>
     <li><code>LAlt</code> + <code>MOUSE2</code> drag to draw a wall on the map</li>
     <li><code>MWheel</code> to zoom</li>
