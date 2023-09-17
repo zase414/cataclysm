@@ -30,5 +30,5 @@ out vec4 color;
 
 void main()
 {
-    color = texture(TEX_SAMPLER, fTexCords);
+    color = texture(TEX_SAMPLER, fTexCords) * fColor;
 }

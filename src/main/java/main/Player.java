@@ -10,7 +10,7 @@ import util.Wall;
 
 import java.util.HashSet;
 
-import static main.Intersecter.areIntersecting;
+import static render.RayCaster.Intersecter.areIntersecting;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 

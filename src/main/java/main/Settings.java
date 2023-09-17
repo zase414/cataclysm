@@ -5,10 +5,10 @@ public class Settings {
     static float mouseSensitivity = 0.1f;
 
     // graphics
-    static float renderDistance = 1000.0f;
+    static float renderDistance = 100000.0f;
     public static float fadeOutDistance = 50.0f;
     static float fov = 80.0f;
-    static int rayCount = 1000;
+    static int rayCount = 600;
     static boolean mapFullyVisible = false;
     static boolean cameraFollowsPlayer = true;
     static boolean flappyBird = false;

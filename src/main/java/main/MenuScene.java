@@ -4,7 +4,6 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
-import render.Texture;
 import util.Color;
 import util.Ray;
 import util.Time;
@@ -28,13 +27,12 @@ public class MenuScene extends Scene{
     private float[] vertexArray = {};
     private int[] elementArray = {};
     private int vaoID, vboID, eboID;
-    private Texture texture;
     RayCaster rayCaster;
     Map map;
     List<Map> maps = new ArrayList<>();
     int currentMapIndex;
     Player player;
-    MapConverter mapConverter;
+    Map.MapConverter mapConverter;
     public static MenuScene instance = null;
     public static MenuScene get() {
         if (MenuScene.instance == null) {
@@ -68,11 +66,8 @@ public class MenuScene extends Scene{
             System.out.println(s);
         }
 
-        // import texture
-        texture = new Texture("assets/textures/image.png");
-
         // initialize the map converter
-        mapConverter = new MapConverter();
+        mapConverter = new Map.MapConverter();
 
         // initialize the first map
         map = maps.get(0);
@@ -90,7 +85,7 @@ public class MenuScene extends Scene{
         camera = new Camera(new Vector2f());
 
         // import and compile the shaders
-        defaultShader = new Shader("assets/shaders/texture-based.glsl");
+        defaultShader = new Shader("assets/shaders/color-based.glsl");
         defaultShader.compile();
 
         // -------------------------------------------

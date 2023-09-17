@@ -20,4 +20,9 @@ public class Color {
         float b = Math.max(Math.min(this.b - this.b * (distance / fadeOutDistance), this.b), this.b / 100.0f);
         return new Color(r, g, b, this.a);
     }
+
+    public Color texFade(float distance) {
+        float c = Math.min(1f - (distance/fadeOutDistance), 1.0f);
+        return new Color(c,c,c,1f);
+    }
 }

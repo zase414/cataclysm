@@ -269,16 +269,30 @@ public class MainScene extends Scene{
                 float xl = (float) i * screenPortion - Window.get().width / 2.0f;
                 float xr = (i + di) *  screenPortion - Window.get().width / 2.0f;
 
-                Color startColor = startRay.colors.get(depth).shade(startDistance);
-                Color endColor = endRay.colors.get(depth).shade(endDistance);
+                Color startShade = new Color().texFade(startDistance);
+                Color endShade = new Color().texFade(endDistance);
 
-                float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
-                float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
+                //Color startColor = startRay.colors.get(depth).shade(startDistance);
+                //Color endColor = endRay.colors.get(depth).shade(endDistance);
 
-                addVertexWall(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).topHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 0, minT, maxT);
-                addVertexWall(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).topHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae, 0, 1, minT, maxT);
-                addVertexWall(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).botHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 2, minT, maxT);
-                addVertexWall(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).botHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae, 0, 3, minT, maxT);
+                float rs = startShade.r, gs = startShade.g, bs = startShade.b, as = startShade.a;
+                float re = endShade.r, ge = endShade.g, be = endShade.b, ae = endShade.a;
+
+
+                /*
+                    0----1
+                    |    |
+                    |    |
+                    2----3
+                    |    |
+                    |    |
+                    4----5
+                */
+
+                addWallVertices(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).topHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 0, minT, maxT);
+                addWallVertices(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).topHeight - ye * player.posZ,   1.0f/(depth + 1), re, ge, be, ae, 0, 1, minT, maxT);
+                addWallVertices(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).botHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 2, minT, maxT);
+                addWallVertices(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).botHeight - ye * player.posZ,   1.0f/(depth + 1), re, ge, be, ae, 0, 3, minT, maxT);
             }
         }
         return vertexList;
@@ -296,12 +310,12 @@ public class MainScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-        float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
+        //float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
 
-        addVertex(skyVertexList, xl, y, 0.0f, r, g, b, a, 1, 0); // top left
-        addVertex(skyVertexList, xr, y, 0.0f, r, g, b, a, 1, 1); // top right
-        addVertex(skyVertexList, xl, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a, 1, 2); // bottom left
-        addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a, 1, 3); // bottom right
+        addVertex(skyVertexList, xl, y,       0.0f, 1,1,1,1, 1, 0); // top left
+        addVertex(skyVertexList, xr, y,       0.0f, 1,1,1,1, 1, 1); // top right
+        addVertex(skyVertexList, xl, 0.0f, 0.0f, 1,1,1,1, 1, 2); // bottom left
+        addVertex(skyVertexList, xr, 0.0f, 0.0f, 1,1,1,1, 1, 3); // bottom right
         return skyVertexList;
     }
     public List<Integer> skyElementList(int firstElementIndex) {
@@ -315,11 +329,12 @@ public class MainScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-        float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
-        addVertex(groundVertexList, xl, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a,  2, 0); // top left
-        addVertex(groundVertexList, xr, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a, 2, 1); // top right
-        addVertex(groundVertexList, xl, -y, 0.0f, r, g, b, a, 2, 2); // bottom left
-        addVertex(groundVertexList, xr, -y, 0.0f, r, g, b, a, 2, 3); // bottom right
+        //float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
+
+        addVertex(groundVertexList, xl, 0.0f, 0.0f, 1,1,1,1,  2, 0); // top left
+        addVertex(groundVertexList, xr, 0.0f, 0.0f, 1,1,1,1, 2, 1); // top right
+        addVertex(groundVertexList, xl, -y, 0.0f,      1,1,1,1, 2, 2); // bottom left
+        addVertex(groundVertexList, xr, -y, 0.0f,      1,1,1,1, 2, 3); // bottom right
         return groundVertexList;
     }
     public List<Integer> groundElementList(int firstElementIndex) {

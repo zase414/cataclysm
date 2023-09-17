@@ -3,10 +3,8 @@ package main;
 import java.util.Collections;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.*;
-
 public abstract class Scene {
-    static float texturePoolSize = 3.0f;
+    static int texturePoolSize = 4;
     protected Camera camera;
     int positionsSize = 3;
     int colorSize = 4;
@@ -27,7 +25,7 @@ public abstract class Scene {
     }
     public static void addVertex(List<Float> vertexList, float x, float y, float z, float r, float g, float b, float a, int texture, int texPos) {
 
-        float texX = 0.0f;
+        float texX;
         float texY = 0.0f;
 
         /* texPos:
@@ -40,12 +38,8 @@ public abstract class Scene {
         */
 
         switch (texPos) {
-            case 0 -> {
-                texX = ( (float) texture) / texturePoolSize;
-            }
-            case 1 -> {
-                texX = ( (float) (texture + 1)) / texturePoolSize;
-            }
+            case 0 -> texX = ( (float) texture) / texturePoolSize;
+            case 1 -> texX = ( (float) (texture + 1)) / texturePoolSize;
             case 2 -> {
                 texX = ( (float) texture) / texturePoolSize;
                 texY = 1.0f;
@@ -54,13 +48,14 @@ public abstract class Scene {
                 texX = ( (float) (texture + 1)) / texturePoolSize;
                 texY = 1.0f;
             }
+            default -> throw new IllegalStateException("Unexpected texture position on vertex: " + texPos);
         }
         for (float v : new float[]{x,y,z,r,g,b,a,texX,texY}) {
             vertexList.add(v);
         }
     }
 
-    public static void addVertexWall(List<Float> vertexList, float x, float y, float z, float r, float g, float b, float a, int texture, int texPos, float minT, float maxT) {
+    public static void addWallVertices(List<Float> vertexList, float x, float y, float z, float r, float g, float b, float a, int texture, int texPos, float minT, float maxT) {
 
         float texX = 0.0f;
         float texY = 0.0f;
@@ -75,12 +70,8 @@ public abstract class Scene {
         */
 
         switch (texPos) {
-            case 0 -> {
-                texX = ((float) texture + minT) / texturePoolSize;
-            }
-            case 1 -> {
-                texX = ((float) texture + maxT) / texturePoolSize;
-            }
+            case 0 -> texX = ((float) texture + minT) / texturePoolSize;
+            case 1 -> texX = ((float) texture + maxT) / texturePoolSize;
             case 2 -> {
                 texX = ((float) texture + minT) / texturePoolSize;
                 texY = 1.0f;
@@ -89,8 +80,9 @@ public abstract class Scene {
                 texX = ((float) texture + maxT) / texturePoolSize;
                 texY = 1.0f;
             }
+
         }
-        for (float v : new float[]{x,y,z,r,g,b,a,texX,texY}) {
+        for (float v : new float[]{x, y, z, r, g, b, a, texX, texY}) {
             vertexList.add(v);
         }
     }
