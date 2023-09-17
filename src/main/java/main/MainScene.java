@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import render.Texture;
 import util.Color;
 import util.Ray;
 import util.Time;
@@ -20,10 +21,11 @@ import static org.lwjgl.opengl.GL20.*;
 import static render.RayCaster.divideRays;
 
 public class MainScene extends Scene{
-    public float[] vertexArray = {};
+    private Shader defaultShader;
+    private float[] vertexArray = {};
     private int[] elementArray = {};
     private int vaoID, vboID, eboID;
-    private Shader defaultShader;
+    private Texture texture;
     RayCaster rayCaster;
     Map map;
     Player player;
@@ -37,6 +39,9 @@ public class MainScene extends Scene{
     }
     @Override
     public void init() {
+
+        // import texture
+        texture = new Texture("assets/textures/image.png");
 
         // initialize the map
         map = MenuScene.get().map;
@@ -52,7 +57,7 @@ public class MainScene extends Scene{
         camera = new Camera(new Vector2f());
 
         // import and compile the shaders
-        defaultShader = new Shader("assets/shaders/default.glsl");
+        defaultShader = new Shader("assets/shaders/texture-based.glsl");
         defaultShader.compile();
 
         // -------------------------------------------
@@ -82,7 +87,7 @@ public class MainScene extends Scene{
 
         // add vertex attribute pointers
 
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * floatSizeBytes;
 
         // position attributes
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
@@ -91,6 +96,10 @@ public class MainScene extends Scene{
         // color attributes
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
         glEnableVertexAttribArray(1);
+
+        // texture attributes
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
+        glEnableVertexAttribArray(2);
     }
     @Override
     public void update(double dt) {
@@ -118,12 +127,12 @@ public class MainScene extends Scene{
             player.speed = 6.0f;
         } else player.speed = 4.0f;
 
-        if ((keyPushed(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
+        if ((keyInitialPress(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
             player.jumpPhase = player.minPhase;
             queueJump = false;
         }
 
-        if (keyPushed(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
+        if (keyInitialPress(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
             queueJump = true;
         }
 
@@ -173,8 +182,13 @@ public class MainScene extends Scene{
         }
     }
     private void sendGPUDataAndUnbind() {
-        // use the shader and upload values
+        // use the shader, upload texture and values
         defaultShader.use();
+
+        defaultShader.uploadTexture("TEX_SAMPLER", 0);
+        glActiveTexture(GL_TEXTURE0);
+        texture.bind();
+
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
         defaultShader.uploadFloat("uTime", (float) Time.getTime());
@@ -202,7 +216,7 @@ public class MainScene extends Scene{
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
 
         // add vertex attribute pointers
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * floatSizeBytes;
 
         // position attributes
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
@@ -212,8 +226,12 @@ public class MainScene extends Scene{
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
         glEnableVertexAttribArray(1);
 
+        // texture attributes
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
+        glEnableVertexAttribArray(2);
+
         // draw
-        glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_QUADS, elementArray.length, GL_UNSIGNED_INT, 0);
 
         vertexArray = null;
         elementArray = null;
@@ -239,6 +257,9 @@ public class MainScene extends Scene{
                 float startDistance = startRay.intersectionDistanceOnRay.get(depth);
                 float endDistance = endRay.intersectionDistanceOnRay.get(depth);
 
+                float minT = startRay.intersectionRelDistanceOnWall.get(depth);
+                float maxT = endRay.intersectionRelDistanceOnWall.get(depth);
+
                 int i = startRay.id;
                 int di = endRay.id - startRay.id + 1;
 
@@ -254,17 +275,17 @@ public class MainScene extends Scene{
                 float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
                 float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
 
-                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).topHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as);
-                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).topHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae);
-                addVertex(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).botHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as);
-                addVertex(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).botHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae);
+                addVertexWall(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).topHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 0, minT, maxT);
+                addVertexWall(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).topHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae, 0, 1, minT, maxT);
+                addVertexWall(vertexList, xl, -ys + ys * startRay.intersectedWalls.get(depth).botHeight - ys * player.posZ, 1.0f/(depth + 1), rs, gs, bs, as, 0, 2, minT, maxT);
+                addVertexWall(vertexList, xr, -ye + ye * endRay.intersectedWalls.get(depth).botHeight - ye * player.posZ, 1.0f/(depth + 1), re, ge, be, ae, 0, 3, minT, maxT);
             }
         }
         return vertexList;
     }
     public List<Integer> wallElementList(int wallVertexListLength, int firstElementIndex) {
         List<Integer> wallElementList = new ArrayList<>();
-        // 2 triangles = 6 integers per 4 vertexes in the vertexArray
+        // 1 quad = 4 integers per 4 vertexes in the vertexArray
         for (int i = 0; i < (wallVertexListLength / (vertexVariables * 4)); i++) {
             addQuadShapeElements(wallElementList, firstElementIndex, i);
         }
@@ -277,10 +298,10 @@ public class MainScene extends Scene{
         float xr = (Window.get().width / 2.0f);
         float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
 
-        addVertex(skyVertexList, xl, y, 0.0f, r, g, b, a); // top left
-        addVertex(skyVertexList, xr, y, 0.0f, r, g, b, a); // top right
-        addVertex(skyVertexList, xl, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom left
-        addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a); // bottom right
+        addVertex(skyVertexList, xl, y, 0.0f, r, g, b, a, 1, 0); // top left
+        addVertex(skyVertexList, xr, y, 0.0f, r, g, b, a, 1, 1); // top right
+        addVertex(skyVertexList, xl, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a, 1, 2); // bottom left
+        addVertex(skyVertexList, xr, 0.0f, 0.0f, r - 0.2f, g - 0.2f, b - 0.2f, a, 1, 3); // bottom right
         return skyVertexList;
     }
     public List<Integer> skyElementList(int firstElementIndex) {
@@ -295,10 +316,10 @@ public class MainScene extends Scene{
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
         float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
-        addVertex(groundVertexList, xl, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a); // top left
-        addVertex(groundVertexList, xr, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a); // top right
-        addVertex(groundVertexList, xl, -y, 0.0f, r, g, b, a); // bottom left
-        addVertex(groundVertexList, xr, -y, 0.0f, r, g, b, a); // bottom right
+        addVertex(groundVertexList, xl, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a,  2, 0); // top left
+        addVertex(groundVertexList, xr, 0.0f, 0.0f, Math.max(r - 0.2f, 0.0f), Math.max(g - 0.2f, 0.0f), Math.max(b - 0.2f, 0.0f), a, 2, 1); // top right
+        addVertex(groundVertexList, xl, -y, 0.0f, r, g, b, a, 2, 2); // bottom left
+        addVertex(groundVertexList, xr, -y, 0.0f, r, g, b, a, 2, 3); // bottom right
         return groundVertexList;
     }
     public List<Integer> groundElementList(int firstElementIndex) {

@@ -115,11 +115,14 @@ public class RayCaster {
         List<List<Ray>> chainList = divideRays(rays, depth);
 
         for (List<Ray> sameWallRays : chainList) {
+            // extract first and last ray
             Ray startRay = sameWallRays.get(0);
             Ray endRay = sameWallRays.get(sameWallRays.size() - 1);
+            // get their relative position on the ray
             float minT = Math.min(startRay.intersectionRelDistanceOnWall.get(depth), endRay.intersectionRelDistanceOnWall.get(depth));
             float maxT = Math.max(startRay.intersectionRelDistanceOnWall.get(depth), endRay.intersectionRelDistanceOnWall.get(depth));
 
+            // update the revealed parts of the wall on the map
             if (minT < startRay.intersectedWalls.get(depth).minVisibleT) {
                 startRay.intersectedWalls.get(depth).minVisibleT = minT;
             }
@@ -130,7 +133,7 @@ public class RayCaster {
     }
 
     public static List<List<Ray>> divideRays(List<Ray> rays, int depth) {
-        // divides rays into sublists based on the wall they intersected
+        // divides rays into sub-lists based on the wall they intersected
         // i.e. example wall ids: 111 222 11 22 333
         List<List<Ray>> sublists = new ArrayList<>();
         List<Ray> currentSublist = new ArrayList<>();

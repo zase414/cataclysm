@@ -2,6 +2,7 @@ package main;
 
 import org.joml.Vector2f;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 import util.CollisionBox;
 import util.Line;
 import util.Ray;
@@ -20,9 +21,10 @@ public class Player {
     public float height = 1.5f;
     public float viewAngle;
     public float speed = 4.0f;
+    Vector4d k  = new Vector4d(0.0, 0.0, 0.0, 0.0);
 
     public CollisionBox collisionBox = new CollisionBox();
-    public Vector3d movementVector = new Vector3d();
+    public Vector3d inertia = new Vector3d();
     public Player (Map map) {
         this.posX = map.spawnPoint.x;
         this.posY = map.spawnPoint.y;
@@ -47,31 +49,43 @@ public class Player {
 
         Vector3d dPos = new Vector3d(0.0, 0.0, 0.0);
         double strafeMultiplier = 1.0;
+
         boolean playerIsStrafing = (KeyListener.keyBeingPressed(GLFW_KEY_W) || KeyListener.keyBeingPressed(GLFW_KEY_S)) && (KeyListener.keyBeingPressed(GLFW_KEY_D) || KeyListener.keyBeingPressed(GLFW_KEY_A));
-        double movementMultipliers = speed * dt * strafeMultiplier;
+
+        if (playerIsStrafing) {
+            strafeMultiplier = Math.sqrt(2) / 2;
+        }
+
+        double friction = 4.0;
+
+        double movementMultipliers = speed * strafeMultiplier * dt;
+
 
         if (KeyListener.keyBeingPressed(GLFW_KEY_W)) {
-            dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle));
-            dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle));
-        }
-        if (KeyListener.keyBeingPressed(GLFW_KEY_S)) {
-            dPos.x -= movementMultipliers * Math.sin(Math.toRadians(viewAngle));
-            dPos.y -= movementMultipliers * Math.cos(Math.toRadians(viewAngle));
-        }
-        if (KeyListener.keyBeingPressed(GLFW_KEY_A)) {
-            dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle - 90));
-            dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle - 90));
-        }
-        if (KeyListener.keyBeingPressed(GLFW_KEY_D)) {
-            dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle + 90));
-            dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle + 90));
-        }
 
-        // correct strafing speed
-        if (playerIsStrafing) {
-            dPos.x *= Math.sqrt(2) / 2;
-            dPos.y *= Math.sqrt(2) / 2;
-        }
+            k.x = Math.min(1, k.x + friction*dt);
+        } else k.x = Math.max(0, k.x-friction*dt);
+        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle)) * k.x;
+        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle)) * k.x;
+        if (KeyListener.keyBeingPressed(GLFW_KEY_S)) {
+
+            k.y = Math.min(1, k.y + friction*dt);
+        } else k.y = Math.max(0, k.y-friction*dt);
+        dPos.x -= movementMultipliers * Math.sin(Math.toRadians(viewAngle)) * k.y;
+        dPos.y -= movementMultipliers * Math.cos(Math.toRadians(viewAngle)) * k.y;
+        if (KeyListener.keyBeingPressed(GLFW_KEY_A)) {
+
+            k.z = Math.min(1, k.z + friction*dt);
+        } else k.z = Math.max(0, k.z-friction*dt);
+        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle - 90)) * k.z;
+        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle - 90)) * k.z;
+        if (KeyListener.keyBeingPressed(GLFW_KEY_D)) {
+
+            k.w = Math.min(1, k.w + friction*dt);
+        } else k.w = Math.max(0, k.w-friction*dt);
+        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle + 90)) * k.w;
+        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle + 90)) * k.w;
+
 
         // update X coordinate
         posX += dPos.x;
@@ -109,7 +123,8 @@ public class Player {
         jumpPhase += dt;
 
         updateCollisionBox();
-        movementVector = dPos;
+
+        inertia = dPos;
     }
     public void updateViewAngle() {
         if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {

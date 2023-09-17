@@ -5,6 +5,7 @@ import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
+import render.Texture;
 import util.*;
 
 import java.nio.FloatBuffer;
@@ -20,10 +21,11 @@ import static org.lwjgl.opengl.GL20.*;
 import static render.RayCaster.divideRays;
 
 public class MapScene extends Scene{
-    public float[] vertexArray = {};
+    private Shader defaultShader;
+    private float[] vertexArray = {};
     private int[] elementArray = {};
     private int vaoID, vboID, eboID;
-    private Shader defaultShader;
+    private Texture texture;
     RayCaster rayCaster;
     Map map;
     Player player;
@@ -39,6 +41,9 @@ public class MapScene extends Scene{
     @Override
     public void init() {
 
+        // import texture
+        texture = new Texture("assets/textures/image.png");
+
         // initialize the rayCaster
         rayCaster = MainScene.get().rayCaster;
 
@@ -52,7 +57,7 @@ public class MapScene extends Scene{
         camera = new Camera(new Vector2f());
 
         // import and compile the shaders
-        defaultShader = new Shader("assets/shaders/default.glsl");
+        defaultShader = new Shader("assets/shaders/color-based.glsl");
         defaultShader.compile();
 
         // ---------------------------------
@@ -82,7 +87,7 @@ public class MapScene extends Scene{
 
         // add vertex attribute pointers
 
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * floatSizeBytes;
 
         // position attributes
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
@@ -91,6 +96,10 @@ public class MapScene extends Scene{
         // color attributes
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
         glEnableVertexAttribArray(1);
+
+        // texture attributes
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
+        glEnableVertexAttribArray(2);
     }
     @Override
     public void update(double dt) {
@@ -163,7 +172,7 @@ public class MapScene extends Scene{
         }
     }
     private void cameraFollowsPlayer() {
-        Vector3d dPos = player.movementVector;
+        Vector3d dPos = player.inertia;
         camera.position.x += dPos.x * mapZoom;
         camera.position.y += dPos.y * mapZoom;
     }
@@ -229,8 +238,12 @@ public class MapScene extends Scene{
         }
     }
     private void sendGPUDataAndUnbind() {
-        // use the shader and upload values
+        // use the shader, upload texture and values
         defaultShader.use();
+
+        defaultShader.uploadTexture("TEX_SAMPLER", 0);
+        glActiveTexture(GL_TEXTURE0);
+        texture.bind();
         defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMat4f("uView", camera.getViewMatrix());
         defaultShader.uploadFloat("uTime", (float) Time.getTime());
@@ -258,7 +271,7 @@ public class MapScene extends Scene{
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
 
         // add vertex attribute pointers
-        int vertexSizeBytes = (positionsSize + colorSize) * floatSizeBytes;
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * floatSizeBytes;
 
         // position attributes
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, false, vertexSizeBytes, 0);
@@ -268,8 +281,12 @@ public class MapScene extends Scene{
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, (long) positionsSize * floatSizeBytes);
         glEnableVertexAttribArray(1);
 
+        // texture attributes
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
+        glEnableVertexAttribArray(2);
+
         // draw
-        glDrawElements(GL_TRIANGLES, this.elementArray.length, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_QUADS, elementArray.length, GL_UNSIGNED_INT, 0);
 
         vertexArray = null;
         elementArray = null;
@@ -342,7 +359,7 @@ public class MapScene extends Scene{
     }
     public List<Integer> intersectionElementList(int intersectionVertexListLength, int firstElementIndex) {
         List<Integer> elementList = new ArrayList<>();
-        // every 28 floats = 6 values
+        // every 8 vertexes = 8 values
         for (int i = 0; i < (intersectionVertexListLength / (vertexVariables * 8)); i++) {
             addQuadBeamElements(elementList, firstElementIndex, i);
         }

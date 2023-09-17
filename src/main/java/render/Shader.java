@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import static org.lwjgl.opengl.GL20.*;
 
 public class Shader {
-
     private int shaderProgramID;
     private boolean beingUsed = false;
     private String vertexSource;
@@ -168,5 +167,11 @@ public class Shader {
         int varLocation = glGetUniformLocation(shaderProgramID, varName);
         use();
         glUniform1i(varLocation, val);
+    }
+
+    public void uploadTexture(String varName, int slot) {
+        int varLocation = glGetUniformLocation(shaderProgramID, varName);
+        use();
+        glUniform1i(varLocation, slot);
     }
 }

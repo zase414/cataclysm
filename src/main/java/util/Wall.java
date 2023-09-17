@@ -1,5 +1,7 @@
 package util;
 
+import render.Texture;
+
 public class Wall extends Line {
     public Color color = new Color();
     public int id;
@@ -8,4 +10,5 @@ public class Wall extends Line {
         super(x1, y1, x2, y2);
     }
     public float minVisibleT = 2.0f, maxVisibleT = -2.0f;
+    public Texture texture;
 }

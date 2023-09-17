@@ -28,7 +28,7 @@ public class KeyListener {
     public static boolean isKeyReleased(int key) {
         return !get().keyPressed[key] && get().previouslyHeldKeys[key];
     }
-    public static boolean keyPushed(int key) {
+    public static boolean keyInitialPress(int key) {
         return keyBeingPressed(key) && !get().previouslyHeldKeys[key];
     }
     public static void updateHeldKeys() {
