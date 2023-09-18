@@ -1,4 +1,4 @@
-<h1>Cataclysm</h1>
+<h1><code>BETA</code> Cataclysm</h1>
 <b>a work-in-progress OpenGL pseudo-3D raycasting-based game (engine) written in Java</b>
  
 
