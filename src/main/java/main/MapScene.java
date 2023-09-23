@@ -2,6 +2,7 @@ package main;
 
 import org.joml.Vector2f;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;
 import render.Shader;
@@ -102,7 +103,7 @@ public class MapScene extends Scene{
         glEnableVertexAttribArray(2);
     }
     @Override
-    public void update(double dt) {
+    public void update(float dt) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -155,15 +156,15 @@ public class MapScene extends Scene{
             // while zooming in
             float cursorPosX = MouseListener.getX() - Window.window.width / 2.0f;
             float cursorPosY = MouseListener.getY() - Window.window.height / 2.0f;
-            camera.position.x += player.posX + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
-            camera.position.y -= player.posY + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
+            camera.position.x += player.coordinates.x + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
+            camera.position.y -= player.coordinates.y + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
         } else if (MouseListener.getScrollY() < 0){
             // while zooming out
             float cursorPosX = MouseListener.getX() - Window.window.width / 2.0f;
             float cursorPosY = MouseListener.getY() - Window.window.height / 2.0f;
 
-            float targetX = player.posX + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
-            float targetY = player.posY + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
+            float targetX = player.coordinates.x + cursorPosX * MouseListener.getScrollY() * scrollSensitivity;
+            float targetY = player.coordinates.y + cursorPosY * MouseListener.getScrollY() * scrollSensitivity;
 
             float smoothness = 0.2f;
 
@@ -172,7 +173,7 @@ public class MapScene extends Scene{
         }
     }
     private void cameraFollowsPlayer() {
-        Vector3d dPos = player.inertia;
+        Vector3f dPos = player.inertia;
         camera.position.x += dPos.x * mapZoom;
         camera.position.y += dPos.y * mapZoom;
     }
@@ -308,8 +309,8 @@ public class MapScene extends Scene{
 
         if (Settings.mapFullyVisible) {
             for (Wall wall:map.walls) {
-                addSquareVertexes(vertexList, wall.x1, wall.y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
-                addSquareVertexes(vertexList, wall.x2, wall.y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertices(vertexList, wall.start.x, wall.start.y, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertices(vertexList, wall.end.x, wall.end.y, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
             }
         } else {
             for (Wall wall:map.walls) {
@@ -321,8 +322,8 @@ public class MapScene extends Scene{
                     x2 = wall.coordinatesFromT(wall.maxVisibleT).x;
                     y2 = wall.coordinatesFromT(wall.maxVisibleT).y;
                 } else continue;
-                addSquareVertexes(vertexList, x1, y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
-                addSquareVertexes(vertexList, x2, y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertices(vertexList, x1, y1, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+                addSquareVertices(vertexList, x2, y2, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
             }
         }
         return vertexList;
@@ -352,8 +353,8 @@ public class MapScene extends Scene{
             float endX = endRay.intersections.get(depth).x;
             float endY = endRay.intersections.get(depth).y;
 
-            addSquareVertexes(vertexList, startX, startY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
-            addSquareVertexes(vertexList, endX, endY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
+            addSquareVertices(vertexList, startX, startY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
+            addSquareVertices(vertexList, endX, endY, 9.0f, zoom, width, 0.9f, 0.9f, 0.0f, 1.0f);
         }
         return vertexList;
     }
@@ -371,7 +372,7 @@ public class MapScene extends Scene{
         float size = 1.0f;
         float zoom = mapZoom;
         float z = 10.0f;
-        addPlayerShapeVertexes(vertexList, player.posX, player.posY, z, player.viewAngle, zoom, size, 0.9f, 0.9f, 0.0f, 1.0f);
+        addPlayerShapeVertexes(vertexList, player.coordinates.x, player.coordinates.y, z, player.viewAngle, zoom, size, 0.9f, 0.9f, 0.0f, 1.0f);
         return vertexList;
     }
     public List<Integer> playerElementList(int firstElementIndex) {
@@ -392,8 +393,8 @@ public class MapScene extends Scene{
                 float rayX = ray.intersections.get(0).x;
                 float rayY = ray.intersections.get(0).y;
 
-                addSquareVertexes(vertexList, player.posX, player.posY, 0.0f, zoom, width, 0.4f, 0.4f, 0.0f, 1.0f);
-                addSquareVertexes(vertexList, rayX, rayY, 0.0f, zoom, width,0.4f, 0.4f, 0.0f, 1.0f);
+                addSquareVertices(vertexList, player.coordinates.x, player.coordinates.y, 0.0f, zoom, width, 0.4f, 0.4f, 0.0f, 1.0f);
+                addSquareVertices(vertexList, rayX, rayY, 0.0f, zoom, width,0.4f, 0.4f, 0.0f, 1.0f);
             }
         }
         return vertexList;

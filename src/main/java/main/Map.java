@@ -187,7 +187,6 @@ public class Map {
             } catch (IOException | NumberFormatException | NullPointerException e) {
                 e.printStackTrace();
             }
-
             return wallDataList;
         }
 
@@ -231,11 +230,11 @@ public class Map {
             try {
                 // get the file
                 File export = new File(exportFilepath.concat("converted_map.json"));
-                int suffix = 2;
+                int suffixInt = 2;
                 while (export.exists()) {
-                    String sufString = String.valueOf(suffix);
-                    export = new File(exportFilepath.concat("converted_map").concat("(").concat(sufString).concat(").json"));
-                    suffix++;
+                    String sufIntString = String.valueOf(suffixInt);
+                    export = new File(exportFilepath.concat("converted_map").concat("(").concat(sufIntString).concat(").json"));
+                    suffixInt++;
                 }
                 FileWriter fw = new FileWriter(export.getAbsoluteFile());
                 BufferedWriter bw = new BufferedWriter(fw);

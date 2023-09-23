@@ -10,7 +10,7 @@ public class RayCasterTest {
         Map map = new Map("assets/maps/testmap.json");
         map.compile();
         Player player = new Player(map);
-        System.out.println("x: " + player.posX + ", y: " + player.posY + ", angle: " + player.viewAngle);
+        System.out.println("x: " + player.coordinates.x + ", y: " + player.coordinates.y + ", angle: " + player.viewAngle);
 
         RayCaster rayCaster = new RayCaster(100, 1000, 100, 300);
         rayCaster.cast(player, map);

@@ -130,7 +130,7 @@ public class Window {
 
         double beginTime = Time.getTime();
         double endTime;
-        double dt = -1.0f;
+        float dt = -1.0f;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
 
@@ -160,7 +160,7 @@ public class Window {
             glfwSwapBuffers(glfwWindow);
 
             endTime = Time.getTime();
-            dt = endTime - beginTime;
+            dt = (float) (endTime - beginTime);
             beginTime = endTime;
         }
     }

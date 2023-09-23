@@ -17,7 +17,7 @@ public abstract class Scene {
     public void init() {
 
     }
-    public abstract void update(double dt);
+    public abstract void update(float dt);
     public int getHighestIndex(List<Integer> elementList) {
         int index = 0;
         if (!elementList.isEmpty()) index = Collections.max(elementList);
@@ -86,7 +86,7 @@ public abstract class Scene {
             vertexList.add(v);
         }
     }
-    public static void addSquareVertexes(List<Float> vertexList, float x, float y, float z, float zoom, float size, float r, float g, float b, float a) {
+    public static void addSquareVertices(List<Float> vertexList, float x, float y, float z, float zoom, float size, float r, float g, float b, float a) {
         addVertex(vertexList, x * zoom - size, y * zoom - size, z, r, g, b, a, -1, 0);
         addVertex(vertexList, x * zoom - size, y * zoom + size, z, r, g, b, a, -1, 0);
         addVertex(vertexList, x * zoom + size, y * zoom - size, z, r, g, b, a, -1, 0);

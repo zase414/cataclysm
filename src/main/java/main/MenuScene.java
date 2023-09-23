@@ -53,7 +53,7 @@ public class MenuScene extends Scene{
     }
     public void initPlayer() {
         player = new Player(map);
-        player.posY -= 70f;
+        player.coordinates.y -= 70f;
         player.posZ += 40f;
     }
     @Override
@@ -130,7 +130,7 @@ public class MenuScene extends Scene{
 
     }
     @Override
-    public void update(double dt) {
+    public void update(float dt) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         handleInputEvents();
@@ -355,8 +355,8 @@ public class MenuScene extends Scene{
         for (Wall wall:map.walls) {
             float offsetX = 0.0f;
             float offsetY = 50.0f;
-            addSquareVertexes(vertexList, wall.x1 + offsetX, wall.y1 + offsetY, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
-            addSquareVertexes(vertexList, wall.x2 + offsetX, wall.y2 + offsetY, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+            addSquareVertices(vertexList, wall.start.x + offsetX, wall.start.y + offsetY, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
+            addSquareVertices(vertexList, wall.end.x + offsetX, wall.end.y + offsetY, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
         }
         return vertexList;
     }

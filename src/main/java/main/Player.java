@@ -1,115 +1,75 @@
 package main;
 
 import org.joml.Vector2f;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
-import util.CollisionBox;
-import util.Line;
-import util.Ray;
-import util.Wall;
+import org.joml.Vector3f;
+import util.*;
 
 import java.util.HashSet;
 
+import static main.KeyListener.keyBeingPressed;
 import static render.RayCaster.Intersecter.areIntersecting;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 
 public class Player {
-    public float posX;
-    public float posY;
+    public Coordinates coordinates = new Coordinates();
     public float posZ;
     public float height = 1.5f;
     public float viewAngle;
     public float speed = 4.0f;
-    Vector4d k  = new Vector4d(0.0, 0.0, 0.0, 0.0);
-
-    public CollisionBox collisionBox = new CollisionBox();
-    public Vector3d inertia = new Vector3d();
+    public Vector3f inertia = new Vector3f();
+    private float[] keyPressVector = {0.0f, 0.0f, 0.0f, 0.0f};
+    public CollisionBox collisionBox;
+    private float friction;
+    private float strafeSpeed;
     public Player (Map map) {
-        this.posX = map.spawnPoint.x;
-        this.posY = map.spawnPoint.y;
+        this.coordinates.x = map.spawnPoint.x;
+        this.coordinates.y = map.spawnPoint.y;
         this.viewAngle = map.spawnViewAngle;
         this.posZ = map.spawnHeight;
-        this.collisionBox.size = 0.2f;
+        this.collisionBox = new CollisionBox(0.2f, map.spawnPoint.x, map.spawnPoint.y);
+        this.strafeSpeed = (float) Math.sqrt(2) / 2.0f;
+        this.friction = 4.0f;
     }
-    public void updateCollisionBox() {
-        float size = collisionBox.size;
-        Ray[] bounds = collisionBox.bounds;
-        Vector2f tl = new Vector2f(posX - size, posY + size); // top left
-        Vector2f tr = new Vector2f(posX + size, posY + size); // top right
-        Vector2f bl = new Vector2f(posX - size, posY - size); // bottom left
-        Vector2f br = new Vector2f(posX + size, posY - size); // bottom right
-        bounds[0] = new Ray(tl.x, tl.y, tr.x, tr.y);
-        bounds[1] = new Ray(tr.x, tr.y, br.x, br.y);
-        bounds[2] = new Ray(br.x, br.y, bl.x, bl.y);
-        bounds[3] = new Ray(bl.x, bl.y, tl.x, tl.y);
+    public Player (Map map, float playerSize) {
+        this(map);
+        this.collisionBox.size = playerSize;
+    }
+    public Player (float posX, float posY, float posZ, float viewAngle, CollisionBox collisionBox, float friction, float strafeSpeed) {
+        this.coordinates.x = posX;
+        this.coordinates.y = posY;
+        this.posZ = posZ;
+        this.viewAngle = viewAngle;
+        this.collisionBox = collisionBox;
+        this.friction = friction;
+        this.strafeSpeed = strafeSpeed;
+    }
+    public boolean isStrafing() {
+        return ((keyPressVector[0] + keyPressVector[1]) * (keyPressVector[2] + keyPressVector[3])) != 0;
+    }
+    public void updateCollisionBox(float dx, float dy) {
+        collisionBox.update(dx, dy);
+    }
+
+    public void updateCollisionBox(Vector2f v) {
+        collisionBox.update(v);
     }
     public boolean isInAir;
-    public void handlePlayerMovement(double dt, Map map) {
+    public void handlePlayerMovement(float dt, Map map) {
 
-        Vector3d dPos = new Vector3d(0.0, 0.0, 0.0);
-        double strafeMultiplier = 1.0;
+        float friction = isInAir ? this.friction * 0.2f : this.friction;
+        float speed = this.speed;
+        float strafeSpeed = this.strafeSpeed;
 
-        boolean playerIsStrafing = (KeyListener.keyBeingPressed(GLFW_KEY_W) || KeyListener.keyBeingPressed(GLFW_KEY_S)) && (KeyListener.keyBeingPressed(GLFW_KEY_D) || KeyListener.keyBeingPressed(GLFW_KEY_A));
+        Vector3f dPos = getMovementVector(dt, friction, speed, strafeSpeed);
 
-        if (playerIsStrafing) {
-            strafeMultiplier = Math.sqrt(2) / 2;
-        }
+        applyMove(map, dPos.x, dPos.y);
 
-        double friction = 4.0;
-
-        double movementMultipliers = speed * strafeMultiplier * dt;
-
-
-        if (KeyListener.keyBeingPressed(GLFW_KEY_W)) {
-
-            k.x = Math.min(1, k.x + friction*dt);
-        } else k.x = Math.max(0, k.x-friction*dt);
-        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle)) * k.x;
-        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle)) * k.x;
-        if (KeyListener.keyBeingPressed(GLFW_KEY_S)) {
-
-            k.y = Math.min(1, k.y + friction*dt);
-        } else k.y = Math.max(0, k.y-friction*dt);
-        dPos.x -= movementMultipliers * Math.sin(Math.toRadians(viewAngle)) * k.y;
-        dPos.y -= movementMultipliers * Math.cos(Math.toRadians(viewAngle)) * k.y;
-        if (KeyListener.keyBeingPressed(GLFW_KEY_A)) {
-
-            k.z = Math.min(1, k.z + friction*dt);
-        } else k.z = Math.max(0, k.z-friction*dt);
-        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle - 90)) * k.z;
-        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle - 90)) * k.z;
-        if (KeyListener.keyBeingPressed(GLFW_KEY_D)) {
-
-            k.w = Math.min(1, k.w + friction*dt);
-        } else k.w = Math.max(0, k.w-friction*dt);
-        dPos.x += movementMultipliers * Math.sin(Math.toRadians(viewAngle + 90)) * k.w;
-        dPos.y += movementMultipliers * Math.cos(Math.toRadians(viewAngle + 90)) * k.w;
-
-
-        // update X coordinate
-        posX += dPos.x;
-        updateCollisionBox();
-        if (isColliding(map.walls)) {
-            posX -= dPos.x;
-            dPos.x = 0.0f;
-        }
-
-        // update Y coordinate
-        posY += dPos.y;
-        updateCollisionBox();
-        // if it causes a collision, revert it and nullify the vector
-        if (isColliding(map.walls)) {
-            posY -= dPos.y;
-            dPos.y = 0.0f;
-        }
-
-        // update Z coordinate
-        double phaseStart = jumpPhase;
-        double phaseEnd = phaseStart + dt;
+        // process jumping
+        float phaseStart = jumpPhase;
+        float phaseEnd = phaseStart + dt;
         dPos.z = getPhaseHeight(phaseEnd) - getPhaseHeight(phaseStart);
         posZ += dPos.z;
-        updateCollisionBox();
+        updateCollisionBox(0.0f, 0.0f);
         // if it causes a collision, revert it and nullify the phase
         if (isColliding(map.walls)) {
             isInAir = false;
@@ -122,10 +82,52 @@ public class Player {
         } else isInAir = true;
         jumpPhase += dt;
 
-        updateCollisionBox();
+        updateCollisionBox(0.0f, 0.0f);
 
         inertia = dPos;
     }
+
+    public void applyMove(Map map, float dx, float dy) {
+
+        for (Vector2f d : new Vector2f[]{new Vector2f(dx, 0f), new Vector2f(0f, dy)}) {
+
+            // update collision box for each component
+            updateCollisionBox(d);
+
+            // if it causes a collision, revert it and nullify the vector
+            if (!isColliding(map.walls)) {
+                coordinates.add(d);
+            } else updateCollisionBox(d.mul(-1f));
+        }
+    }
+
+    public Vector3f getMovementVector(float dt, float friction, float speed, float strafeSpeed) {
+        Vector3f dPos = new Vector3f();
+        double strafeMultiplier;
+        if (this.isStrafing()) {
+            strafeMultiplier = strafeSpeed;
+        } else strafeMultiplier = 1.0;
+
+        double multiplierBase = speed * strafeMultiplier * dt;
+        double[] movementMultipliers = {multiplierBase, -multiplierBase, multiplierBase, multiplierBase};
+        int[] keys = {GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D};
+        float[] angles = {viewAngle, viewAngle, viewAngle - 90f, viewAngle + 90f};
+        for (int i = 0; i < keys.length; i++) {
+            keyPressVector[i] = updateComponent(keyBeingPressed(keys[i]), keyPressVector[i], dt, friction);
+            if (keyPressVector[i] > 0) {
+                dPos.x += movementMultipliers[i] * Math.sin(Math.toRadians(angles[i])) * keyPressVector[i];
+                dPos.y += movementMultipliers[i] * Math.cos(Math.toRadians(angles[i])) * keyPressVector[i];
+            }
+        }
+        return dPos;
+    }
+
+    public static float updateComponent(boolean condition, float component, float dt, float friction) {
+        if (condition) {
+           return Math.min(1, component + friction * dt);
+        } else return Math.max(0, component - friction * dt);
+    }
+
     public void updateViewAngle() {
         if (glfwGetInputMode(Window.get().glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
             viewAngle -= Settings.mouseSensitivity * MouseListener.getDX();
@@ -150,7 +152,7 @@ public class Player {
     public float minPhase = -0.25f;
     final float maxPhase = - minPhase;
     final float velocity = 24.0f;
-    public double getPhaseHeight(double x) {
+    public float getPhaseHeight(float x) {
         return - velocity * (x*x);
     }
 }

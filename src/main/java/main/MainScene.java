@@ -102,7 +102,7 @@ public class MainScene extends Scene{
         glEnableVertexAttribArray(2);
     }
     @Override
-    public void update(double dt) {
+    public void update(float dt) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         handleInputEvents();
@@ -123,7 +123,7 @@ public class MainScene extends Scene{
     private void handleInputEvents() {
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
 
-        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
+        if (keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
             player.speed = 6.0f;
         } else player.speed = 4.0f;
 
@@ -136,7 +136,7 @@ public class MainScene extends Scene{
             queueJump = true;
         }
 
-        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
+        if (keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

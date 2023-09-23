@@ -6,7 +6,6 @@ import java.util.List;
 import main.Map;
 import main.MouseListener;
 import main.Player;
-import org.joml.Vector2f;
 import util.*;
 
 import static render.RayCaster.Intersecter.getIntersection;
@@ -58,8 +57,8 @@ public class RayCaster {
         float nCenterDX = -(float) Math.cos(rad);
         float nCenterDY = (float) Math.sin(rad);
         // absolute center point coordinates
-        float centerPointX = player.posX + centerDX;
-        float centerPointY = player.posY + centerDY;
+        float centerPointX = player.coordinates.x + centerDX;
+        float centerPointY = player.coordinates.y + centerDY;
         // absolute edge point coordinates
         float edge1X = (centerPointX + nCenterDX);
         float edge1Y = (centerPointY + nCenterDY);
@@ -71,10 +70,10 @@ public class RayCaster {
 
         for (int i = 0; i < rayCount; i++) {
 
-            float x1 = player.posX;
-            float y1 = player.posY;
-            float dx = (edge1X + (dXStep * i)) - player.posX;
-            float dy = (edge1Y + (dYStep * i)) - player.posY;
+            float x1 = player.coordinates.x;
+            float y1 = player.coordinates.y;
+            float dx = (edge1X + (dXStep * i)) - player.coordinates.x;
+            float dy = (edge1Y + (dYStep * i)) - player.coordinates.y;
             float x2 = x1 + renderDistance * dx;
             float y2 = y1 + renderDistance * dy;
 
@@ -162,18 +161,13 @@ public class RayCaster {
 
         // SHOWS T ON THE FIRST GIVEN LINE
         public static float getIntersectionT(Line line1, Line line2) {
-            return ((line1.y1 * line2.dx) - (line2.y1 * line2.dx) - (line1.x1 * line2.dy) + (line2.x1 * line2.dy)) / ((line1.dx * line2.dy) - (line1.dy * line2.dx));
+            return ((line1.start.y * line2.vector.x) - (line2.start.y * line2.vector.x) - (line1.start.x * line2.vector.y) + (line2.start.x * line2.vector.y)) / ((line1.vector.x * line2.vector.y) - (line1.vector.y * line2.vector.x));
         }
 
-        public static Vector2f getIntersection(Line line1, Line line2) {
+        public static Coordinates getIntersection(Line line1, Line line2) {
             // t is the scale of the line1 vector that ends with the intersection
-            Vector2f intersection = new Vector2f();
             float t = getIntersectionT(line1, line2);
-
-            intersection.x = line1.x1 + (line1.dx * t);
-            intersection.y = line1.y1 + (line1.dy * t);
-
-            return intersection;
+            return new Coordinates(line1.start.x + (line1.vector.x * t), line1.start.y + (line1.vector.y * t));
         }
 
         public static boolean areIntersecting(Line line1, Line line2) {
