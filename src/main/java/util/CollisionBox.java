@@ -1,8 +1,6 @@
 package util;
 
-import org.joml.Vector2d;
 import org.joml.Vector2f;
-import org.joml.Vector3d;
 
 public class CollisionBox {
     public float x, y;

@@ -1,7 +1,6 @@
 package main;
 
 import org.joml.Vector2f;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import render.RayCaster;

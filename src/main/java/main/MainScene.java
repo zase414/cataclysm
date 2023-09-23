@@ -151,14 +151,14 @@ public class MainScene extends Scene{
         List<Integer> elementList = new ArrayList<>();
 
         // create ground related vertex and element lists, add them to the final list
-        List<Float> groundVertexList = groundVertexList(map);
+        List<Float> groundVertexList = groundVertexList();
         List<Integer> groundElementList = groundElementList(getHighestIndex(elementList));
 
         List<Float> vertexList = new ArrayList<>(groundVertexList);
         elementList.addAll(groundElementList);
 
         // create sky related vertex and element lists, add them to the final list
-        List<Float> skyVertexList = skyVertexList(map);
+        List<Float> skyVertexList = skyVertexList();
         List<Integer> skyElementList = skyElementList(getHighestIndex(elementList) + 1);
 
         vertexList.addAll(skyVertexList);
@@ -305,7 +305,7 @@ public class MainScene extends Scene{
         }
         return wallElementList;
     }
-    public List<Float> skyVertexList(Map map) {
+    public List<Float> skyVertexList() {
         List<Float> skyVertexList = new ArrayList<>();
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
@@ -323,7 +323,7 @@ public class MainScene extends Scene{
         addQuadShapeElements(skyElementList, firstElementIndex, 0);
         return skyElementList;
     }
-    public List<Float> groundVertexList(Map map) {
+    public List<Float> groundVertexList() {
         List<Float> groundVertexList = new ArrayList<>();
 
         float y = Window.get().height / 2.0f;
