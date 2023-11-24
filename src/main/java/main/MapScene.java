@@ -123,8 +123,11 @@ public class MapScene extends Scene{
     }
     float[] wallDrawCoords = new float[4];
     private void handleInputEvents() {
+
+        // switch to fpv on Tab press
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(1);
 
+        // sprinting
         if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
             player.speed = 6.0f;
         } else player.speed = 4.0f;
@@ -143,6 +146,7 @@ public class MapScene extends Scene{
             }
         }
 
+        // exit to menu on Esc
         if (isKeyReleased(GLFW_KEY_ESCAPE)) Window.changeScene(0);
 
         updateHeldKeys();

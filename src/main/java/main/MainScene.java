@@ -121,21 +121,26 @@ public class MainScene extends Scene{
     }
     private boolean queueJump;
     private void handleInputEvents() {
+        // switch to map on Tab press
         if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
 
+        // sprinting
         if (keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
             player.speed = 6.0f;
         } else player.speed = 4.0f;
 
+        // jumping
         if ((keyInitialPress(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
             player.jumpPhase = player.minPhase;
             queueJump = false;
         }
 
+        // queue a jump
         if (keyInitialPress(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
             queueJump = true;
         }
 
+        // show cursor on Alt press
         if (keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
@@ -143,6 +148,7 @@ public class MainScene extends Scene{
             rayCaster.adjustRayCount();
         }
 
+        // go to menu on Esc
         if (isKeyReleased(GLFW_KEY_ESCAPE)) Window.changeScene(0);
 
         updateHeldKeys();
