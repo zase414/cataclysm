@@ -89,7 +89,7 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_FOCUSED, 1);
         glfwWindowHint(GLFW_VISIBLE, 0);
-        glfwWindowHint(GLFW_RESIZABLE, 1);
+        glfwWindowHint(GLFW_RESIZABLE, 0);
         glfwWindowHint(GLFW_MAXIMIZED, 0);
         glfwWindowHint(GLFW_DECORATED, 1);
 
@@ -107,7 +107,7 @@ public class Window {
         glfwMakeContextCurrent(glfwWindow);
 
         // vsync
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
 
         // make window visible
         glfwShowWindow(glfwWindow);
@@ -143,16 +143,15 @@ public class Window {
 
             if (dt >= 0) {
                 currentScene.update(dt);
+                glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
             }
-
-            glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
 
             if (KeyListener.keyBeingPressed(GLFW_KEY_F1)) {
                 changeScene(0);
-            }
+            } else
             if (KeyListener.keyBeingPressed(GLFW_KEY_F2)) {
                 changeScene(1);
-            }
+            } else
             if (KeyListener.keyBeingPressed(GLFW_KEY_F3)) {
                 changeScene(2);
             }
