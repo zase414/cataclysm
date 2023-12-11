@@ -265,8 +265,8 @@ public class Map {
             try {
                 FileDialog dialog = new FileDialog((Frame)null, "Select a PGF/TikZ file");
                 dialog.setFile("*.txt");
-                dialog.setMode(FileDialog.LOAD);
                 dialog.setDirectory("assets/import");
+                dialog.setMode(FileDialog.LOAD);
                 dialog.setVisible(true);
                 file = dialog.getFiles()[0];
                 dialog.dispose();

@@ -107,7 +107,7 @@ public class Window {
         glfwMakeContextCurrent(glfwWindow);
 
         // vsync
-        //glfwSwapInterval(1);
+        glfwSwapInterval(1);
 
         // make window visible
         glfwShowWindow(glfwWindow);
