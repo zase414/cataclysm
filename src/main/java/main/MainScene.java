@@ -230,7 +230,7 @@ public class MainScene extends Scene{
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
         glEnableVertexAttribArray(2);
 
-        // draw elements as quads
+        // draw
         glDrawElements(GL_QUADS, elementArray.length, GL_UNSIGNED_INT, 0);
 
         vertexArray = null;

@@ -138,7 +138,7 @@ public class MapScene extends Scene{
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             rayCaster.adjustRayCount();
-            if (Settings.mapCameraFollowsPlayer) {
+            if (Settings.cameraFollowsPlayer) {
                 cameraFollowsPlayer();
             }
         }
@@ -285,7 +285,7 @@ public class MapScene extends Scene{
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (long) (positionsSize + colorSize) * floatSizeBytes);
         glEnableVertexAttribArray(2);
 
-        // draw elements as quads
+        // draw
         glDrawElements(GL_QUADS, elementArray.length, GL_UNSIGNED_INT, 0);
 
         vertexArray = null;
@@ -306,7 +306,7 @@ public class MapScene extends Scene{
         float width = 1.0f;
         float zoom = mapZoom;
 
-        if (Settings.mapWallsFullyVisible) {
+        if (Settings.mapFullyVisible) {
             for (Wall wall:map.walls) {
                 addSquareVertices(vertexList, wall.start.x, wall.start.y, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
                 addSquareVertices(vertexList, wall.end.x, wall.end.y, 1.0f, zoom, width, wall.color.r, wall.color.g, wall.color.b, wall.color.a);
