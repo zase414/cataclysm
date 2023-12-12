@@ -12,5 +12,6 @@ public class WallData {
     this.color = color;
     this.topHeight = hTop;
     this.botHeight = hBot;
-    }
+}
+
 }

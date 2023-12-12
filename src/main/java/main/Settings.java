@@ -11,8 +11,6 @@ public class Settings {
     static int rayCount = 600;
     static boolean mapWallsFullyVisible = false;
     static boolean mapCameraFollowsPlayer = true;
-    static int screenWidth = 1920;
-    static int screenHeight = 1080;
 
     // movement
     static boolean flappyBird = false;

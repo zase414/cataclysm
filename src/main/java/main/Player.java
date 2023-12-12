@@ -115,8 +115,8 @@ public class Player {
         for (int i = 0; i < keys.length; i++) {
             keyPressVector[i] = updateComponent(keyBeingPressed(keys[i]), keyPressVector[i], dt, friction);
             if (keyPressVector[i] > 0) {
-                dPos.x += (float) (movementMultipliers[i] * Math.sin(Math.toRadians(angles[i])) * keyPressVector[i]);
-                dPos.y += (float) (movementMultipliers[i] * Math.cos(Math.toRadians(angles[i])) * keyPressVector[i]);
+                dPos.x += movementMultipliers[i] * Math.sin(Math.toRadians(angles[i])) * keyPressVector[i];
+                dPos.y += movementMultipliers[i] * Math.cos(Math.toRadians(angles[i])) * keyPressVector[i];
             }
         }
         return dPos;

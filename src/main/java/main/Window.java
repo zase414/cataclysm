@@ -18,8 +18,8 @@ public class Window {
     public static Scene currentScene = null;
     static Window window = null;
     private Window() {
-        this.width = Settings.screenWidth;
-        this.height = Settings.screenHeight;
+        this.width = 1920;
+        this.height = 1080;
         this.title = "cataclysm";
     }
 

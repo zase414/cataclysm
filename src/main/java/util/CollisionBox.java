@@ -6,6 +6,10 @@ public class CollisionBox {
     public float x, y;
     public Ray[] bounds;
     public float size;
+
+    public CollisionBox(Ray[] bounds) {
+        this.bounds = bounds;
+    }
     public CollisionBox(float size, float x, float y) {
         this.size = size;
         Vector2f tl = new Vector2f(x - size, y + size); // top left
@@ -22,10 +26,10 @@ public class CollisionBox {
 
     public void update(double dx, double dy) {
         for (Ray b:bounds) {
-            b.start.x += (float) dx;
-            b.end.x += (float) dx;
-            b.start.y += (float) dy;
-            b.end.y += (float) dy;
+            b.start.x += dx;
+            b.end.x += dx;
+            b.start.y += dy;
+            b.end.y += dy;
         }
     }
 
