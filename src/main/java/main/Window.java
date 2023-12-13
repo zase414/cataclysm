@@ -5,6 +5,8 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import util.Time;
 
+import java.util.Objects;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -73,7 +75,7 @@ public class Window {
 
         // end glfw
         glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
     }
 
     public void init() {

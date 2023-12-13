@@ -97,7 +97,7 @@ public class Player {
             // if it causes a collision, revert it and nullify the vector
             if (!isColliding(map.walls)) {
                 coordinates.add(d);
-            } else updateCollisionBox(d.mul(-1f));
+            } else updateCollisionBox(d.mul(-1.0f));
         }
     }
 
@@ -115,8 +115,8 @@ public class Player {
         for (int i = 0; i < keys.length; i++) {
             keyPressVector[i] = updateComponent(keyBeingPressed(keys[i]), keyPressVector[i], dt, friction);
             if (keyPressVector[i] > 0) {
-                dPos.x += movementMultipliers[i] * Math.sin(Math.toRadians(angles[i])) * keyPressVector[i];
-                dPos.y += movementMultipliers[i] * Math.cos(Math.toRadians(angles[i])) * keyPressVector[i];
+                dPos.x += (float) ((float) movementMultipliers[i] * Math.sin(Math.toRadians(angles[i])) * keyPressVector[i]);
+                dPos.y += (float) ((float) movementMultipliers[i] * Math.cos(Math.toRadians(angles[i])) * keyPressVector[i]);
             }
         }
         return dPos;
