@@ -1,4 +1,6 @@
 {
+  "windowWidth": 1920,
+  "windowHeight": 1080,
   "mouseSensitivity": 0.1,
   "renderDistance": 100000.0,
   "fadeOutDistance": 50.0,

@@ -10,6 +10,8 @@ public class Settings {
     static float mouseSensitivity;
 
     // graphics
+    static int windowWidth;
+    static int windowHeight;
     static float renderDistance;
     public static float fadeOutDistance;
     static float fov;
@@ -35,6 +37,8 @@ public class Settings {
         Settings.mouseSensitivity = newSettings.mouseSensitivity;
 
         // graphics
+        Settings.windowHeight = newSettings.windowHeight;
+        Settings.windowWidth = newSettings.windowWidth;
         Settings.renderDistance = newSettings.renderDistance;
         Settings.fadeOutDistance = newSettings.fadeOutDistance;
         Settings.fov = newSettings.fov;
