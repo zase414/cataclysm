@@ -82,5 +82,5 @@
     <ul><li>menu screen improved, here you can select a map to play from the "maps" folder</li></ul>
 
 <h3>v1.0.0:</h3>
-<ul><li>a GitHub release with that includes a compiled binary and settings moved to a JSON file</li></ul>
+<ul><li>a GitHub release with included compiled binary and settings moved to a JSON file</li></ul>
   
