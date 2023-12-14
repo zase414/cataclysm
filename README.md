@@ -4,7 +4,7 @@
 
 
 
-<h2>Controls</h2>
+<h2>Default controls</h2>
   <ul>
     <li><code>LAlt</code> to show cursor</li>
   </ul>
