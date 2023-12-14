@@ -22,6 +22,20 @@ public class Settings {
     // movement
     static boolean flappyBird;
 
+    // keybinds
+    static int forward;
+    static int backward;
+    static int right;
+    static int left;
+    static int sprint;
+    static int jump;
+    static int map;
+    static int cursor;
+    static int startMap;
+    static int importPGFTikZ;
+    static int changeScene;
+
+
     public static void loadSettingsFromJsonFile(String filePath) {
         try (FileReader reader = new FileReader(filePath)) {
             Gson gson = new Gson();
@@ -48,5 +62,18 @@ public class Settings {
 
         // movement
         Settings.flappyBird = newSettings.flappyBird;
+
+        // keybinds
+        Settings.forward = newSettings.forward;
+        Settings.backward = newSettings.backward;
+        Settings.right = newSettings.right;
+        Settings.left = newSettings.left;
+        Settings.jump = newSettings.jump;
+        Settings.map = newSettings.map;
+        Settings.cursor = newSettings.cursor;
+        Settings.startMap = newSettings.startMap;
+        Settings.importPGFTikZ = newSettings.importPGFTikZ;
+        Settings.sprint = newSettings.sprint;
+        Settings.changeScene = newSettings.changeScene;
     }
 }

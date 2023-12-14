@@ -121,22 +121,22 @@ public class MainScene extends Scene{
     }
     private boolean queueJump;
     private void handleInputEvents() {
-        if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(2);
+        if (isKeyReleased(Settings.changeScene)) Window.changeScene(2);
 
-        if (keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
+        if (keyBeingPressed(Settings.sprint)) {
             player.speed = 6.0f;
         } else player.speed = 4.0f;
 
-        if ((keyInitialPress(GLFW_KEY_SPACE) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
+        if ((keyInitialPress(Settings.jump) || queueJump) && (!player.isInAir || Settings.flappyBird)) {
             player.jumpPhase = player.minPhase;
             queueJump = false;
         }
 
-        if (keyInitialPress(GLFW_KEY_SPACE) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
+        if (keyInitialPress(Settings.jump) && player.jumpPhase > 0.0f && player.jumpPhase < player.maxPhase) {
             queueJump = true;
         }
 
-        if (keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
+        if (keyBeingPressed(Settings.cursor)) {
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         } else {
             glfwSetInputMode(Window.window.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

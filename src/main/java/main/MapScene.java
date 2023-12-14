@@ -123,14 +123,14 @@ public class MapScene extends Scene{
     }
     float[] wallDrawCoords = new float[4];
     private void handleInputEvents() {
-        if (isKeyReleased(GLFW_KEY_TAB)) Window.changeScene(1);
+        if (isKeyReleased(Settings.map)) Window.changeScene(1);
 
-        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_SHIFT)) {
+        if (KeyListener.keyBeingPressed(Settings.sprint)) {
             player.speed = 6.0f;
         } else player.speed = 4.0f;
 
         // mouse cursor state & ALT-related stuff
-        if (KeyListener.keyBeingPressed(GLFW_KEY_LEFT_ALT)) {
+        if (KeyListener.keyBeingPressed(Settings.cursor)) {
             drawWalls();
             // show mouse cursor
             glfwSetInputMode(Window.get().glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
