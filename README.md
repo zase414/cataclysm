@@ -36,7 +36,6 @@
   <li><a href="https://www.lwjgl.org/download">LWJGL 3.3.2</a></li>
   <li><a href="https://github.com/JOML-CI/JOML">JOML 1.10.5</a></li>
   <li><a href="https://github.com/google/gson">GSON 2.10.1</a></li>
-</ul>
   
 
 
@@ -81,4 +80,7 @@
   
    <h3>v0.5.1:</h3>
     <ul><li>menu screen improved, here you can select a map to play from the "maps" folder</li></ul>
+
+<h3>v1.0.0:</h3>
+<ul><li>a GitHub release with that includes a compiled binary and settings moved to a JSON file</li></ul>
   

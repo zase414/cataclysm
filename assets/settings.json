@@ -1,12 +1,26 @@
 {
   "windowWidth": 1920,
   "windowHeight": 1080,
+
   "mouseSensitivity": 0.1,
+
   "renderDistance": 100000.0,
   "fadeOutDistance": 50.0,
   "fov": 80.0,
   "rayCount": 300,
   "mapFullyVisible": false,
   "cameraFollowsPlayer": true,
-  "flappyBird": false
+  "flappyBird": false,
+
+  "changeScene": 258,
+  "forward": 87,
+  "backward": 83,
+  "right": 68,
+  "left": 65,
+  "sprint": 340,
+  "jump": 32,
+  "map": 258,
+  "cursor": 342,
+  "startMap": 32,
+  "importPGFTikZ": 257
 }

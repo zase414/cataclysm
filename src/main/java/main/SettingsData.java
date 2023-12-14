@@ -15,4 +15,17 @@ public class SettingsData {
 
     // movement
     public boolean flappyBird;
+
+    // keybinds
+    int forward;
+    int backward;
+    int right;
+    int left;
+    int sprint;
+    int jump;
+    int map;
+    int cursor;
+    int startMap;
+    int importPGFTikZ;
+    int changeScene;
 }

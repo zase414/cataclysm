@@ -160,9 +160,9 @@ public class MenuScene extends Scene{
             System.out.println("Map " + (currentMapIndex + 1) + "/" + maps.size() + " selected: " + map.filepath);
         }
 
-        if (isKeyReleased(GLFW_KEY_ENTER)) mapConverter.run();
+        if (isKeyReleased(Settings.importPGFTikZ)) mapConverter.run();
 
-        if (isKeyReleased(GLFW_KEY_SPACE)) Window.changeScene(1);
+        if (isKeyReleased(Settings.startMap)) Window.changeScene(1);
 
         updateHeldKeys();
     }
