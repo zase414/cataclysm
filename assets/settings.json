@@ -1,0 +1,10 @@
+{
+  "mouseSensitivity": 0.1,
+  "renderDistance": 100000.0,
+  "fadeOutDistance": 50.0,
+  "fov": 80.0,
+  "rayCount": 300,
+  "mapFullyVisible": false,
+  "cameraFollowsPlayer": true,
+  "flappyBird": false
+}
