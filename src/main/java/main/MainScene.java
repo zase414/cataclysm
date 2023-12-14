@@ -57,7 +57,7 @@ public class MainScene extends Scene{
         camera = new Camera(new Vector2f());
 
         // import and compile the shaders
-        defaultShader = new Shader("assets/shaders/texture-based.glsl");
+        defaultShader = new Shader("assets/shaders/color-based.glsl");
         defaultShader.compile();
 
         // -------------------------------------------
@@ -269,14 +269,16 @@ public class MainScene extends Scene{
                 float xl = (float) i * screenPortion - Window.get().width / 2.0f;
                 float xr = (i + di) *  screenPortion - Window.get().width / 2.0f;
 
-                Color startShade = new Color().texFade(startDistance);
-                Color endShade = new Color().texFade(endDistance);
+                // for textures
+                //Color startColor = new Color().texFade(startDistance);
+                //Color endColor = new Color().texFade(endDistance);
 
-                //Color startColor = startRay.colors.get(depth).shade(startDistance);
-                //Color endColor = endRay.colors.get(depth).shade(endDistance);
+                //for colors
+                Color startColor = startRay.colors.get(depth).shade(startDistance);
+                Color endColor = endRay.colors.get(depth).shade(endDistance);
 
-                float rs = startShade.r, gs = startShade.g, bs = startShade.b, as = startShade.a;
-                float re = endShade.r, ge = endShade.g, be = endShade.b, ae = endShade.a;
+                float rs = startColor.r, gs = startColor.g, bs = startColor.b, as = startColor.a;
+                float re = endColor.r, ge = endColor.g, be = endColor.b, ae = endColor.a;
 
 
                 /*
@@ -310,12 +312,14 @@ public class MainScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-        //float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
 
-        addVertex(skyVertexList, xl, y,       0.0f, 1,1,1,1, 1, 0); // top left
-        addVertex(skyVertexList, xr, y,       0.0f, 1,1,1,1, 1, 1); // top right
-        addVertex(skyVertexList, xl, 0.0f, 0.0f, 1,1,1,1, 1, 2); // bottom left
-        addVertex(skyVertexList, xr, 0.0f, 0.0f, 1,1,1,1, 1, 3); // bottom right
+        // for color shader
+        float r = map.skyColor.r, g = map.skyColor.g, b = map.skyColor.b, a = map.skyColor.a;
+
+        addVertex(skyVertexList, xl, y,       0.0f, r,g,b,a, 1, 0); // top left
+        addVertex(skyVertexList, xr, y,       0.0f, r,g,b,a, 1, 1); // top right
+        addVertex(skyVertexList, xl, 0.0f, 0.0f, r,g,b,a, 1, 2); // bottom left
+        addVertex(skyVertexList, xr, 0.0f, 0.0f, r,g,b,a, 1, 3); // bottom right
         return skyVertexList;
     }
     public List<Integer> skyElementList(int firstElementIndex) {
@@ -329,12 +333,14 @@ public class MainScene extends Scene{
         float y = Window.get().height / 2.0f;
         float xl = -(Window.get().width / 2.0f);
         float xr = (Window.get().width / 2.0f);
-        //float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
 
-        addVertex(groundVertexList, xl, 0.0f, 0.0f, 1,1,1,1,  2, 0); // top left
-        addVertex(groundVertexList, xr, 0.0f, 0.0f, 1,1,1,1, 2, 1); // top right
-        addVertex(groundVertexList, xl, -y, 0.0f,      1,1,1,1, 2, 2); // bottom left
-        addVertex(groundVertexList, xr, -y, 0.0f,      1,1,1,1, 2, 3); // bottom right
+        // for color shader
+        float r = map.groundColor.r, g = map.groundColor.g, b = map.groundColor.b, a = map.groundColor.a;
+
+        addVertex(groundVertexList, xl, 0.0f, 0.0f, r,g,b,a,  2, 0); // top left
+        addVertex(groundVertexList, xr, 0.0f, 0.0f, r,g,b,a, 2, 1); // top right
+        addVertex(groundVertexList, xl, -y, 0.0f,      r,g,b,a, 2, 2); // bottom left
+        addVertex(groundVertexList, xr, -y, 0.0f,      r,g,b,a, 2, 3); // bottom right
         return groundVertexList;
     }
     public List<Integer> groundElementList(int firstElementIndex) {

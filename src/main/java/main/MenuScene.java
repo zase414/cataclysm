@@ -63,7 +63,7 @@ public class MenuScene extends Scene{
             Map map = new Map(s);
             map.compile();
             maps.add(map);
-            System.out.println(s);
+            System.out.println("Map loaded: " + s);
         }
 
         // initialize the map converter
@@ -157,7 +157,7 @@ public class MenuScene extends Scene{
             MapScene.get().map = map;
             MapScene.get().player = new Player(map);
 
-            System.out.println("map " + (currentMapIndex + 1) + "/" + maps.size());
+            System.out.println("Map " + (currentMapIndex + 1) + "/" + maps.size() + " selected: " + map.filepath);
         }
 
         if (isKeyReleased(GLFW_KEY_ENTER)) mapConverter.run();

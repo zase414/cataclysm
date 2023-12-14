@@ -40,11 +40,6 @@
   
 
 
-<h2>Planned features</h2>
-<ul>
-  <li>texture support</li>
-  <li>procedural map generation</li>
-</ul>
 
 
 

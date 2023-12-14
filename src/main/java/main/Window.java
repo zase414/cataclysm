@@ -5,6 +5,8 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import util.Time;
 
+import java.util.Objects;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -73,7 +75,7 @@ public class Window {
 
         // end glfw
         glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
     }
 
     public void init() {
@@ -89,7 +91,7 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_FOCUSED, 1);
         glfwWindowHint(GLFW_VISIBLE, 0);
-        glfwWindowHint(GLFW_RESIZABLE, 1);
+        glfwWindowHint(GLFW_RESIZABLE, 0);
         glfwWindowHint(GLFW_MAXIMIZED, 0);
         glfwWindowHint(GLFW_DECORATED, 1);
 
@@ -143,18 +145,7 @@ public class Window {
 
             if (dt >= 0) {
                 currentScene.update(dt);
-            }
-
-            glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
-
-            if (KeyListener.keyBeingPressed(GLFW_KEY_F1)) {
-                changeScene(0);
-            }
-            if (KeyListener.keyBeingPressed(GLFW_KEY_F2)) {
-                changeScene(1);
-            }
-            if (KeyListener.keyBeingPressed(GLFW_KEY_F3)) {
-                changeScene(2);
+                glfwSetWindowTitle(glfwWindow, title + " (" +1.0f/dt+" fps)");
             }
 
             glfwSwapBuffers(glfwWindow);
